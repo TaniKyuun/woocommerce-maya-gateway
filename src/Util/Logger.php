@@ -67,6 +67,15 @@ class Logger
         'firstname',
         'lastname',
         'middlename',
+        // Confirmed against a live sandbox PAYMENT_SUCCESS/COMPLETED webhook:
+        // the completed-checkout payload nests card data under `paymentDetails`
+        // (maskedCardNumber, last4, cardType) and carries a reusable
+        // `paymentTokenId`. Top-level transaction ids (receiptNumber,
+        // transactionReferenceNumber, approvalCode) are deliberately NOT
+        // redacted — they carry no card/PII and are needed for reconciliation.
+        'paymentdetails',
+        'paymenttokenid',
+        'maskedcardnumber',
     ];
 
     public function __construct(private readonly bool $debug_enabled = false) {}
