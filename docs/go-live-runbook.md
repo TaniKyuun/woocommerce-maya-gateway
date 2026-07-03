@@ -13,6 +13,21 @@ order.** The browser return never marks an order paid. Order state is
 **monotonic: once paid, an order is never demoted** — a late or replayed
 failure webhook is ignored (see `EventDispatcher::dispatch`).
 
+## Hard gates before ANY real-money checkout
+
+The charge path (webhook-completes-order, forgeries rejected, paid-is-a-floor) is
+live-validated. These reversal/infra gates are **not** yet proven and block production:
+
+- [ ] **Reversal proven once.** Run a real **refund + void + manual capture** end-to-end
+      against Maya (needs a Payments/Vault-scoped key). Never take real money you have
+      not proven you can give back — the refund path has only ever been unit-tested.
+- [ ] **Stable ingress.** Do NOT run production behind an ephemeral quick tunnel: if it
+      drops, Maya webhooks vanish and orders sit `pending` (customer charged, no order) —
+      silently. Use real hosting or a named/monitored tunnel with a **fixed** webhook URL
+      registered in Maya.
+- [ ] **Named on-call.** Decide who watches the `wc-maya-gateway` log for the first ~100
+      live payments and who can refund manually, out of hours.
+
 ## Pre-flight checklist (before enabling for customers)
 
 - [ ] **API key scopes:** confirm your Maya keys have BOTH the **Checkout** and the
@@ -99,3 +114,9 @@ files before sharing them.
 - **Simultaneous duplicate-delivery side-effects:** monotonic state prevents double
   payment; a truly concurrent double-delivery could still produce a duplicate order
   note (never a double charge). A DB-unique-constraint claim is the future fix.
+- **Multi-capture partial-refund is non-atomic.** When a refund must span several
+  captured payments and one action fails mid-sequence, earlier actions (e.g. a void)
+  have already moved money on Maya while WooCommerce marks the refund *failed* (no
+  `WC_Order_Refund` created). It is surfaced loudly (`wc_maya_refund_partial_failure`
+  + per-action order notes), not silent — but the operator must reconcile against the
+  Maya dashboard. Single-capture and full refunds are unaffected.
