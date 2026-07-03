@@ -15,6 +15,13 @@ failure webhook is ignored (see `EventDispatcher::dispatch`).
 
 ## Pre-flight checklist (before enabling for customers)
 
+- [ ] **API key scopes:** confirm your Maya keys have BOTH the **Checkout** and the
+      **Payments/Vault** scope. Checkout (create session + webhooks) works with the
+      Checkout scope alone, but **refunds, voids, and manual capture** call the
+      Payments API (`/payments/v1/...`) and will fail with `HTTP 401` / `K007
+      "Invalid key scope"` if the key lacks Payments scope. A Checkout-only sandbox
+      app exhibits exactly this — enable the Payments product / add a Vault-scoped
+      key before relying on refunds.
 - [ ] Run the test suite green: `ddev exec -d /var/www/html/web/app/plugins/woocommerce-maya-gateway vendor/bin/pest`.
 - [ ] Sandbox keys entered; **Test mode ON**; place a full sandbox order and confirm the **webhook** (not the redirect) moves the order to *Processing/Completed*.
 - [ ] Abandon a payment at Maya's page → order does **not** complete.
