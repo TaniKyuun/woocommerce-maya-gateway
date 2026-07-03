@@ -186,3 +186,32 @@ test('inbound webhook card data and PII are redacted from the logged payload', f
     expect($line)->toContain('"id":"pay_abc"');
     expect($line)->toContain('"requestReferenceNumber":"42"');
 });
+
+test('the live COMPLETED-webhook payload redacts paymentDetails and paymentTokenId', function (): void {
+    $sink = wc_maya_log_sink();
+
+    // Shape confirmed from a real Maya sandbox COMPLETED webhook.
+    (new Logger(true))->info('Webhook verified', [
+        'payload' => [
+            'id'                        => 'chk_1',
+            'status'                    => 'COMPLETED',
+            'paymentStatus'             => 'PAYMENT_SUCCESS',
+            'requestReferenceNumber'    => '333',
+            'receiptNumber'             => 'c79ea6301ee4',
+            'transactionReferenceNumber' => '3f8c544f-dbc0-4448',
+            'approvalCode'              => '00001234',
+            'paymentTokenId'            => 'omir7kTziOt4d7fbxv6EXYgjSQMhj6jj',
+            'paymentDetails'            => [ 'last4' => '1112', 'maskedCardNumber' => '******1112', 'cardType' => 'visa' ],
+        ],
+    ]);
+
+    $line = $sink->calls[0]['message'];
+
+    expect($line)->not->toContain('omir7kTziOt4d7fbxv6EXYgjSQMhj6jj'); // token
+    expect($line)->not->toContain('******1112');                       // masked card
+    expect($line)->toContain('[redacted]');
+    // Transaction identifiers are kept for reconciliation/debugging.
+    expect($line)->toContain('"receiptNumber":"c79ea6301ee4"');
+    expect($line)->toContain('"approvalCode":"00001234"');
+    expect($line)->toContain('"requestReferenceNumber":"333"');
+});
