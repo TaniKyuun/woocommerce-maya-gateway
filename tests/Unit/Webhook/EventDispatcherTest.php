@@ -167,8 +167,8 @@ test('PAYMENT_EXPIRED and AUTH_FAILED also map to update_status(failed)', functi
     }
 });
 
-test('checkout failure, dropout, and cancellation use terminal failure handling', function (): void {
-    foreach ([ WebhookEvent::CheckoutFailure, WebhookEvent::CheckoutDropout, WebhookEvent::PaymentCancelled ] as $event) {
+test('PAYMENT_FAILED, PAYMENT_EXPIRED, and PAYMENT_CANCELLED all map to WooCommerce failed', function (): void {
+    foreach ([ WebhookEvent::PaymentFailed, WebhookEvent::PaymentExpired, WebhookEvent::PaymentCancelled ] as $event) {
         $order = wc_maya_mock_order(42, 100.0);
         $order->shouldReceive('update_status')->with('failed', Mockery::type('string'))->once();
 
@@ -178,6 +178,21 @@ test('checkout failure, dropout, and cancellation use terminal failure handling'
 
         expect($result['action'])->toBe('failed');
         expect($result['event'])->toBe($event->value);
+    }
+});
+
+test('regression: deprecated CHECKOUT_FAILURE / CHECKOUT_DROPOUT no longer fail an in-flight order', function (): void {
+    foreach ([ WebhookEvent::CheckoutFailure, WebhookEvent::CheckoutDropout ] as $event) {
+        $order = wc_maya_mock_order(42, 100.0); // pending, not paid
+        $order->shouldNotReceive('update_status');
+        $order->shouldNotReceive('payment_complete');
+
+        Functions\when('wc_get_order')->alias(static fn(): WC_Order => $order);
+
+        $result = (new EventDispatcher(new Logger(false)))->dispatch($event, [ 'requestReferenceNumber' => '42' ]);
+
+        // Checkout-level events fall through to the no-op "ignored" branch.
+        expect($result['action'])->toBe('ignored');
     }
 });
 

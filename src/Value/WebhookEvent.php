@@ -41,12 +41,16 @@ enum WebhookEvent: string
 
     public function is_terminal_failure(): bool
     {
+        // Order state is driven by PAYMENT_* events only. The CHECKOUT_* family
+        // is deprecated by Maya ("subscribe to the corresponding PAYMENT_*
+        // events") and describes the checkout *session*, not the payment — a
+        // session can absorb many failed attempts before one succeeds, so a
+        // checkout-level failure is not a terminal outcome and must not fail an
+        // in-flight order. See docs/webhook-event-model.md.
         return match ($this) {
             self::PaymentFailed,
             self::PaymentExpired,
             self::PaymentCancelled,
-            self::CheckoutFailure,
-            self::CheckoutDropout,
             self::AuthFailed => true,
             default          => false,
         };

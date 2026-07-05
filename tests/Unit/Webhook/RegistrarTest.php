@@ -33,13 +33,12 @@ function wc_maya_existing_record(string $id, string $name): WebhookRecord
     ]);
 }
 
-test('managed_names covers exactly the five events from the rebuild plan', function (): void {
+test('managed_names covers exactly the PAYMENT_* events (no deprecated CHECKOUT_*)', function (): void {
     expect(Registrar::managed_names())->toEqualCanonicalizing([
-        'CHECKOUT_SUCCESS',
-        'CHECKOUT_FAILURE',
         'PAYMENT_SUCCESS',
         'PAYMENT_FAILED',
         'PAYMENT_EXPIRED',
+        'PAYMENT_CANCELLED',
     ]);
 });
 
@@ -69,21 +68,24 @@ test('reconcile bubbles list errors as WP_Error', function (): void {
     expect($result->get_error_code())->toBe('wc_maya_http_401');
 });
 
-test('reconcile deletes only managed webhooks then creates five fresh ones', function (): void {
+test('reconcile deletes managed AND deprecated webhooks, skips unrelated, recreates only managed', function (): void {
     $endpoint = Mockery::mock(Webhooks::class);
 
     $endpoint->expects('all')->andReturn([
         wc_maya_existing_record('wh-1', 'PAYMENT_SUCCESS'),      // managed → delete
         wc_maya_existing_record('wh-2', 'PAYMENT_FAILED'),       // managed → delete
-        wc_maya_existing_record('wh-3', 'CHECKOUT_DROPOUT'),     // not managed → skip
-        wc_maya_existing_record('wh-4', 'merchant_custom_hook'), // not managed → skip
+        wc_maya_existing_record('wh-3', 'CHECKOUT_FAILURE'),     // deprecated → delete (cleanup)
+        wc_maya_existing_record('wh-4', 'CHECKOUT_DROPOUT'),     // deprecated → delete (cleanup)
+        wc_maya_existing_record('wh-5', 'merchant_custom_hook'), // unrelated → skip
     ]);
 
-    // Both managed deletes succeed.
+    // Managed + deprecated deletes succeed; the merchant's own hook is left alone.
     $endpoint->expects('delete')->with('wh-1')->andReturn(wc_maya_existing_record('wh-1', 'PAYMENT_SUCCESS'));
     $endpoint->expects('delete')->with('wh-2')->andReturn(wc_maya_existing_record('wh-2', 'PAYMENT_FAILED'));
+    $endpoint->expects('delete')->with('wh-3')->andReturn(wc_maya_existing_record('wh-3', 'CHECKOUT_FAILURE'));
+    $endpoint->expects('delete')->with('wh-4')->andReturn(wc_maya_existing_record('wh-4', 'CHECKOUT_DROPOUT'));
 
-    // All five managed events get created at the new URL.
+    // Only the managed PAYMENT_* events are recreated — never the deprecated ones.
     foreach (Registrar::managed_names() as $event) {
         $endpoint->expects('create')->with($event, 'https://new.example.test/cb')
             ->andReturn(WebhookRecord::from_array([
@@ -96,10 +98,10 @@ test('reconcile deletes only managed webhooks then creates five fresh ones', fun
     $result = (new Registrar($endpoint, new Logger(false)))->reconcile('https://new.example.test/cb');
 
     expect($result)->not->toBeInstanceOf(WP_Error::class);
-    expect($result['deleted'])->toEqualCanonicalizing([ 'PAYMENT_SUCCESS', 'PAYMENT_FAILED' ]);
-    expect($result['skipped'])->toEqualCanonicalizing([ 'CHECKOUT_DROPOUT', 'merchant_custom_hook' ]);
+    expect($result['deleted'])->toEqualCanonicalizing([ 'PAYMENT_SUCCESS', 'PAYMENT_FAILED', 'CHECKOUT_FAILURE', 'CHECKOUT_DROPOUT' ]);
+    expect($result['skipped'])->toEqualCanonicalizing([ 'merchant_custom_hook' ]);
     expect($result['errors'])->toBe([]);
-    expect($result['created'])->toHaveCount(5);
+    expect($result['created'])->toHaveCount(4);
 });
 
 test('reconcile records per-step errors without aborting the rest of the run', function (): void {
@@ -112,7 +114,7 @@ test('reconcile records per-step errors without aborting the rest of the run', f
     // Delete of the existing webhook fails.
     $endpoint->expects('delete')->with('wh-1')->andReturn(new WP_Error('wc_maya_http_500', 'oops'));
 
-    // One create fails, four succeed.
+    // One create fails, the rest succeed.
     foreach (Registrar::managed_names() as $event) {
         if ('PAYMENT_FAILED' === $event) {
             $endpoint->expects('create')->with($event, 'https://x.test/cb')->andReturn(new WP_Error('wc_maya_http_409', 'dup'));
@@ -129,7 +131,7 @@ test('reconcile records per-step errors without aborting the rest of the run', f
 
     expect($result)->not->toBeInstanceOf(WP_Error::class);
     expect($result['deleted'])->toBe([]);
-    expect($result['created'])->toHaveCount(4);
+    expect($result['created'])->toHaveCount(3);
     expect($result['errors'])->toHaveCount(2);
     expect($result['errors'][0])->toContain('Delete PAYMENT_SUCCESS');
     expect($result['errors'][1])->toContain('Create PAYMENT_FAILED');

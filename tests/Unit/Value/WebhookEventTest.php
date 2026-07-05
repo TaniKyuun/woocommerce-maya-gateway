@@ -28,13 +28,14 @@ test('try_from_string returns null for unknown or non-string input', function ()
         ->and(WebhookEvent::try_from_string(42))->toBeNull();
 });
 
-test('is_terminal_failure flags every failure-style event', function (): void {
+test('is_terminal_failure flags only PAYMENT_* failure events, not the deprecated CHECKOUT_*', function (): void {
     expect(WebhookEvent::PaymentFailed->is_terminal_failure())->toBeTrue()
         ->and(WebhookEvent::PaymentExpired->is_terminal_failure())->toBeTrue()
         ->and(WebhookEvent::PaymentCancelled->is_terminal_failure())->toBeTrue()
-        ->and(WebhookEvent::CheckoutFailure->is_terminal_failure())->toBeTrue()
-        ->and(WebhookEvent::CheckoutDropout->is_terminal_failure())->toBeTrue()
         ->and(WebhookEvent::AuthFailed->is_terminal_failure())->toBeTrue()
+        // Deprecated checkout-level events must NOT fail an in-flight order.
+        ->and(WebhookEvent::CheckoutFailure->is_terminal_failure())->toBeFalse()
+        ->and(WebhookEvent::CheckoutDropout->is_terminal_failure())->toBeFalse()
         ->and(WebhookEvent::PaymentSuccess->is_terminal_failure())->toBeFalse()
         ->and(WebhookEvent::Authorized->is_terminal_failure())->toBeFalse();
 });
