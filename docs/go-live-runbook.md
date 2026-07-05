@@ -13,6 +13,15 @@ order.** The browser return never marks an order paid. Order state is
 **monotonic: once paid, an order is never demoted** — a late or replayed
 failure webhook is ignored (see `EventDispatcher::dispatch`).
 
+## Webhook events
+
+The plugin subscribes to **payment-level events only**: `PAYMENT_SUCCESS`, `PAYMENT_FAILED`,
+`PAYMENT_EXPIRED`, `PAYMENT_CANCELLED`. `PAYMENT_SUCCESS` completes the order; the other three map
+to WooCommerce `failed` (retryable). **Abandonment is handled by `PAYMENT_EXPIRED`, not any
+checkout-level event.** The deprecated `CHECKOUT_*` family is not acted on and is deleted from the
+merchant's Maya account on settings-save (see docs/webhook-event-model.md). After saving, "Refresh
+from Maya" should show exactly those four `PAYMENT_*` rows and no `CHECKOUT_*`.
+
 ## Hard gates before ANY real-money checkout
 
 The charge path (webhook-completes-order, forgeries rejected, paid-is-a-floor) is

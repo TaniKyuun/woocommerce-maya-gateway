@@ -363,11 +363,16 @@ class EventDispatcher
     private function mark_failed(WC_Order $order, WebhookEvent $event): array
     {
         $note = match ($event) {
-            WebhookEvent::PaymentExpired => __('Maya payment expired.', 'wc-maya-gateway'),
-            WebhookEvent::AuthFailed     => __('Maya authorization failed.', 'wc-maya-gateway'),
-            default                      => __('Maya payment failed.', 'wc-maya-gateway'),
+            WebhookEvent::PaymentExpired   => __('Maya payment expired.', 'wc-maya-gateway'),
+            WebhookEvent::PaymentCancelled => __('Maya payment cancelled.', 'wc-maya-gateway'),
+            WebhookEvent::AuthFailed       => __('Maya authorization failed.', 'wc-maya-gateway'),
+            default                        => __('Maya payment failed.', 'wc-maya-gateway'),
         };
 
+        // All failure-family events map to WooCommerce `failed` — a retryable
+        // status (unlike `cancelled`, which restores stock and blocks re-payment).
+        // The customer can pay again from the order-pay page; genuine
+        // abandonment is caught by PAYMENT_EXPIRED.
         $order->update_status('failed', $note);
 
         $this->logger->info('EventDispatcher: order failed.', [

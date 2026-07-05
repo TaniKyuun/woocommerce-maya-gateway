@@ -34,6 +34,7 @@ class Simulator
         WebhookEvent::PaymentSuccess->value,
         WebhookEvent::PaymentFailed->value,
         WebhookEvent::PaymentExpired->value,
+        WebhookEvent::PaymentCancelled->value,
     ];
 
     public function __construct(private readonly SettingsHelper $settings) {}

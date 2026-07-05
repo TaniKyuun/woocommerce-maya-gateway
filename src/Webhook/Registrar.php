@@ -42,11 +42,25 @@ class Registrar
      * @var list<WebhookEvent>
      */
     public const MANAGED_EVENTS = [
-        WebhookEvent::CheckoutSuccess,
-        WebhookEvent::CheckoutFailure,
         WebhookEvent::PaymentSuccess,
         WebhookEvent::PaymentFailed,
         WebhookEvent::PaymentExpired,
+        WebhookEvent::PaymentCancelled,
+    ];
+
+    /**
+     * Deprecated Maya event names this plugin used to register. Reconcile
+     * DELETES any of these it finds on the merchant's account (but never
+     * re-creates them), so migrating off the deprecated CHECKOUT_* family
+     * actually cleans up existing subscriptions instead of orphaning them.
+     *
+     * @var list<string>
+     */
+    public const DEPRECATED_EVENT_NAMES = [
+        'CHECKOUT_SUCCESS',
+        'CHECKOUT_FAILURE',
+        'CHECKOUT_DROPOUT',
+        'CHECKOUT_CANCELLED',
     ];
 
     public function __construct(
@@ -83,13 +97,16 @@ class Registrar
         }
 
         $managed_names = self::managed_names();
+        // Delete anything we currently manage OR used to manage (deprecated),
+        // so a migration off the deprecated set actually removes it from Maya.
+        $cleanup_names = array_merge($managed_names, self::DEPRECATED_EVENT_NAMES);
 
         $deleted = [];
         $skipped = [];
         $errors  = [];
 
         foreach ($existing as $record) {
-            if (! in_array($record->name, $managed_names, true)) {
+            if (! in_array($record->name, $cleanup_names, true)) {
                 $skipped[] = $record->name;
                 continue;
             }

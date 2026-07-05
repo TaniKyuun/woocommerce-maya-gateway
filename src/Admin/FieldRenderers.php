@@ -217,6 +217,7 @@ class FieldRenderers
 							<option value="PAYMENT_SUCCESS"><?php esc_html_e('PAYMENT_SUCCESS', 'wc-maya-gateway'); ?></option>
 							<option value="PAYMENT_FAILED"><?php esc_html_e('PAYMENT_FAILED', 'wc-maya-gateway'); ?></option>
 							<option value="PAYMENT_EXPIRED"><?php esc_html_e('PAYMENT_EXPIRED', 'wc-maya-gateway'); ?></option>
+								<option value="PAYMENT_CANCELLED"><?php esc_html_e('PAYMENT_CANCELLED', 'wc-maya-gateway'); ?></option>
 						</select>
 						<button
 							type="button"
