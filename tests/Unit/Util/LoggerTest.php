@@ -154,3 +154,64 @@ test('redaction matches key names case-insensitively', function (): void {
     expect($line)->not->toContain('Basic zzz');
     expect($line)->not->toContain('Maria');
 });
+
+test('inbound webhook card data and PII are redacted from the logged payload', function (): void {
+    $sink = wc_maya_log_sink();
+
+    // A representative Maya payment webhook payload shape.
+    (new Logger(true))->info('Webhook verified', [
+        'payload' => [
+            'id'                     => 'pay_abc',
+            'status'                 => 'PAYMENT_SUCCESS',
+            'amount'                 => 199.5,
+            'requestReferenceNumber' => '42',
+            'fundSource'             => [
+                'type'    => 'card',
+                'id'      => 'src_1',
+                'details' => [ 'maskedPan' => '440000******0000', 'scheme' => 'visa' ],
+            ],
+            'receipt'                => [ 'transactionId' => 'txn_9' ],
+            'buyer'                  => [ 'firstName' => 'Juan', 'lastName' => 'Dela Cruz' ],
+        ],
+    ]);
+
+    $line = $sink->calls[0]['message'];
+
+    expect($line)->not->toContain('440000******0000');
+    expect($line)->not->toContain('Juan');
+    expect($line)->not->toContain('Dela Cruz');
+    expect($line)->not->toContain('txn_9');
+    expect($line)->toContain('[redacted]');
+    // Non-PII correlation fields survive so the log is still useful.
+    expect($line)->toContain('"id":"pay_abc"');
+    expect($line)->toContain('"requestReferenceNumber":"42"');
+});
+
+test('the live COMPLETED-webhook payload redacts paymentDetails and paymentTokenId', function (): void {
+    $sink = wc_maya_log_sink();
+
+    // Shape confirmed from a real Maya sandbox COMPLETED webhook.
+    (new Logger(true))->info('Webhook verified', [
+        'payload' => [
+            'id'                        => 'chk_1',
+            'status'                    => 'COMPLETED',
+            'paymentStatus'             => 'PAYMENT_SUCCESS',
+            'requestReferenceNumber'    => '333',
+            'receiptNumber'             => 'c79ea6301ee4',
+            'transactionReferenceNumber' => '3f8c544f-dbc0-4448',
+            'approvalCode'              => '00001234',
+            'paymentTokenId'            => 'omir7kTziOt4d7fbxv6EXYgjSQMhj6jj',
+            'paymentDetails'            => [ 'last4' => '1112', 'maskedCardNumber' => '******1112', 'cardType' => 'visa' ],
+        ],
+    ]);
+
+    $line = $sink->calls[0]['message'];
+
+    expect($line)->not->toContain('omir7kTziOt4d7fbxv6EXYgjSQMhj6jj'); // token
+    expect($line)->not->toContain('******1112');                       // masked card
+    expect($line)->toContain('[redacted]');
+    // Transaction identifiers are kept for reconciliation/debugging.
+    expect($line)->toContain('"receiptNumber":"c79ea6301ee4"');
+    expect($line)->toContain('"approvalCode":"00001234"');
+    expect($line)->toContain('"requestReferenceNumber":"333"');
+});

@@ -110,8 +110,8 @@ grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' ~/cf-tunnel.log | head -1
 ## Path B — Named tunnel on your own domain
 
 Stable hostname, survives restarts, single Maya-dashboard paste forever. Assumes
-the domain is already on Cloudflare. Steps below use `tanikyuun.pw` with the
-subdomain `stork.tanikyuun.pw` — adjust freely.
+the domain is already on Cloudflare. Steps below use `example.com` with the
+subdomain `stork.example.com` — adjust freely.
 
 ### 1. Authorize cloudflared
 
@@ -134,14 +134,14 @@ Note the UUID.
 ### 3. Route a DNS hostname to the tunnel
 
 ```bash
-cloudflared tunnel route dns stork-dev stork.tanikyuun.pw
+cloudflared tunnel route dns stork-dev stork.example.com
 ```
 
 If you've previously routed this name and the CNAME already exists, either pick
 a different subdomain or overwrite:
 
 ```bash
-cloudflared tunnel route dns --overwrite-dns stork-dev stork.tanikyuun.pw
+cloudflared tunnel route dns --overwrite-dns stork-dev stork.example.com
 ```
 
 ### 4. Write the cloudflared config
@@ -153,7 +153,7 @@ tunnel: stork-dev
 credentials-file: /home/<you>/.cloudflared/<UUID>.json
 
 ingress:
-  - hostname: stork.tanikyuun.pw
+  - hostname: stork.example.com
     service: https://stork-sage-bedrock.ddev.site
     originRequest:
       noTLSVerify: true
@@ -170,10 +170,10 @@ Edit `.ddev/config.yaml` and add:
 
 ```yaml
 additional_fqdns:
-  - stork.tanikyuun.pw
+  - stork.example.com
 ```
 
-This adds a Traefik rule so requests with `Host: stork.tanikyuun.pw` route to
+This adds a Traefik rule so requests with `Host: stork.example.com` route to
 your project (belt-and-suspenders alongside the `httpHostHeader` rewrite).
 
 ### 6. Make WordPress emit tunnel URLs (only if you need the redirect flow)
@@ -186,8 +186,8 @@ apply inside the container:
 ```yaml
 # .ddev/config.yaml
 web_environment:
-  - WP_HOME=https://stork.tanikyuun.pw
-  - WP_SITEURL=https://stork.tanikyuun.pw/wp
+  - WP_HOME=https://stork.example.com
+  - WP_SITEURL=https://stork.example.com/wp
 ```
 
 Then:
@@ -217,7 +217,7 @@ tmux new -s cf 'cloudflared tunnel run stork-dev'
 Webhook URL in the Maya developer portal:
 
 ```
-https://stork.tanikyuun.pw/?wc-api=maya_webhook
+https://stork.example.com/?wc-api=maya_webhook
 ```
 
 Same URL goes in `Application details → Webhook URL` when creating or updating

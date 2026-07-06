@@ -57,7 +57,7 @@ class SettingsHelper
     }
 
     /**
-     * User-supplied tunnel base URL (e.g. https://stork.tanikyuun.pw). Empty
+     * User-supplied tunnel base URL (e.g. https://stork.example.com). Empty
      * when not configured.
      */
     public function local_dev_webhook_base_url(): string
