@@ -1,8 +1,8 @@
 === WooCommerce Maya Gateway ===
 Contributors: roguetechphilippines
 Tags: woocommerce, payment gateway, maya, paymaya, philippines
-Requires at least: 7.0
-Tested up to: 6.7
+Requires at least: 6.9
+Tested up to: 7.0
 Requires PHP: 8.3
 WC requires at least: 10.6
 WC tested up to: 10.7

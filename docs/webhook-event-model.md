@@ -5,37 +5,37 @@
 **Scope:** `woocommerce-maya-gateway` — how Maya webhook events map to WooCommerce order state.
 **Context:** This plugin is a rewrite of the unmaintained `paymaya-checkout-for-woocommerce`
 ("cynder") plugin. A parity code review plus cross-referencing the Maya, PayMongo, and
-Stripe webhook docs surfaced that the rewrite reacts to **deprecated checkout-level
-failure events** in a way that can prematurely fail in-flight orders.
+Stripe webhook docs surfaced that the pre-hardening rewrite reacted to **deprecated
+checkout-level failure events** in a way that could prematurely fail in-flight orders.
 
 ---
 
-## 1. Findings
+## 1. Pre-fix findings that drove this implementation
 
-### Finding 1 (primary) — the rewrite fails orders on `CHECKOUT_FAILURE`; the reference plugin did not
+### Finding 1 (primary, fixed) — the pre-hardening rewrite failed orders on CHECKOUT_FAILURE
 
-- **Where:** `src/Value/WebhookEvent.php` — `is_terminal_failure()` returns `true` for
-  `CheckoutFailure` and `CheckoutDropout`; `src/Webhook/Registrar.php` — `MANAGED_EVENTS`
-  registers `CHECKOUT_SUCCESS` / `CHECKOUT_FAILURE`.
-- **Behavior:** a `CHECKOUT_FAILURE` webhook → `EventDispatcher` calls
+- **Pre-fix location:** the old `src/Value/WebhookEvent.php` classified `CheckoutFailure`
+  and `CheckoutDropout` as terminal failures, and the old `src/Webhook/Registrar.php`
+  registered `CHECKOUT_SUCCESS` / `CHECKOUT_FAILURE`.
+- **Pre-fix behavior:** a `CHECKOUT_FAILURE` webhook → `EventDispatcher` called
   `update_status('failed')`, firing WooCommerce's failed-order email and stock restoration.
 - **Legacy behavior:** the cynder plugin routed `CHECKOUT_*` to a **no-op passthrough**
   (`handle_webhook_request`) and only failed orders on `PAYMENT_FAILED` / `PAYMENT_EXPIRED`
   / `AUTH_FAILED`.
-- **Failure scenario:** a customer's card is declined on Maya's hosted page → `CHECKOUT_FAILURE`
-  → order marked `failed` (customer emailed, stock restored) → customer retries and pays →
-  `PAYMENT_SUCCESS` completes it. The order churned through a failed state and the customer
-  got a spurious "payment failed" email. ("Paid is a floor" prevents the reverse — a stale
-  failure can't un-pay a paid order — but does not prevent the premature failure above.)
-- **Verdict:** CONFIRMED behavioral divergence. `CHECKOUT_*` are **deprecated** by Maya (see refs).
+- **Pre-fix failure scenario:** a customer's card was declined on Maya's hosted page →
+  `CHECKOUT_FAILURE` → order marked `failed` (customer emailed, stock restored) → customer
+  retried and paid → `PAYMENT_SUCCESS` completed it. The order churned through a failed
+  state and the customer got a spurious "payment failed" email. ("Paid is a floor" prevented
+  the reverse — a stale failure could not un-pay a paid order — but did not prevent the
+  premature failure above.)
+- **Verdict:** fixed behavioral divergence. `CHECKOUT_*` are **deprecated** by Maya (see refs).
 
-### Finding 2 — `PAYMENT_CANCELLED` is not subscribed
+### Finding 2 (fixed) — PAYMENT_CANCELLED was not subscribed
 
-- **Where:** `src/Webhook/Registrar.php` — `MANAGED_EVENTS`.
-- Maya lists `PAYMENT_CANCELLED` as a current event ("a payment is stopped or reversed by the
-  customer or merchant" → "Cancel the order"). Neither the rewrite nor the legacy plugin
-  registers it, so a cancelled payment currently delivers no signal. `is_terminal_failure()`
-  already classifies `PaymentCancelled`, but it is never delivered because it isn't registered.
+- **Implemented location:** `PAYMENT_CANCELLED` handling is fixed: `src/Webhook/Registrar.php::MANAGED_EVENTS` now includes it.
+- **Implemented behavior:** `src/Value/WebhookEvent.php` — `is_terminal_failure()` classifies
+  `PaymentCancelled` as a terminal failure, so delivered cancellation events follow the
+  same retryable failed-order path as the other payment-level failure events.
 
 ### Finding 3 — per-unit item amount can fail to reconcile with the line total
 
@@ -93,7 +93,7 @@ event (`PAYMENT_EXPIRED`), never a checkout-failure event.
 | **Stripe** | `checkout.session.completed` | `checkout.session.expired` (default 24h) | ❌ none (only narrow `async_payment_failed` for delayed methods) |
 | **PayMongo** | `checkout_session.payment.paid` | session status → `expired` (no webhook) | ❌ none |
 | **Maya (current)** | `PAYMENT_SUCCESS` | `PAYMENT_EXPIRED` | ❌ `CHECKOUT_*` **deprecated** |
-| **This plugin (today)** | `PAYMENT_SUCCESS` ✅ | `PAYMENT_EXPIRED` ✅ | ⚠️ **fires `failed` on `CHECKOUT_FAILURE`** |
+| **This plugin (implemented)** | `PAYMENT_SUCCESS` | `PAYMENT_EXPIRED` | none — `CHECKOUT_*` ignored and cleaned up |
 
 All three gateways drive order state from **payment-level** events and have no generic
 checkout-failure signal. Stripe — the reference implementation the industry copies — has never

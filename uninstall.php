@@ -35,5 +35,5 @@ delete_option('woocommerce_maya_checkout_settings');
  * 'wc-maya-gateway', RetryQueue::ACTION_HOOK = 'wc_maya_replay_webhook').
  */
 if (function_exists('as_unschedule_all_actions')) {
-    as_unschedule_all_actions('wc_maya_replay_webhook', [], 'wc-maya-gateway');
+    as_unschedule_all_actions('wc_maya_replay_webhook', null, 'wc-maya-gateway');
 }
