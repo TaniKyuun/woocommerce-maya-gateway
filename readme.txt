@@ -79,3 +79,7 @@ narrowed below the 5-minute default).
 * Hardening: monotonic "paid is a floor" order state, per-order webhook
   de-duplication ledger, filterable keys/IPs/timestamp tolerance, and expanded
   PII/card-data log redaction.
+* Webhooks: order state is now driven by Maya's PAYMENT_* events; the deprecated
+  CHECKOUT_* events are no longer subscribed and are removed on settings-save.
+  A checkout-level failure no longer marks an in-flight order failed — the buyer
+  can still retry; abandonment is handled by PAYMENT_EXPIRED.
