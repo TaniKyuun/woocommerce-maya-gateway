@@ -5,6 +5,47 @@ All notable changes to **WooCommerce Maya Gateway** are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 the project loosely follows semantic versioning.
 
+## [1.1.0] — 2026-07-13
+
+The plugin is now installable as a Composer dependency, and the project
+has moved to the RogueDex org.
+
+### Fixed
+
+- **Fatal error when installed by Composer.** The main plugin file
+  required its own `vendor/autoload.php` unconditionally. A Composer
+  install has no `vendor/` inside the plugin directory — the classes are
+  autoloaded from the project root instead — so loading the plugin took
+  the site down. The require is now conditional and the boot is gated on
+  the classes actually being resolvable, so one codebase serves both a
+  Composer install and the standalone zip (which does bundle `vendor/`).
+- **Stale admin and block assets after an upgrade.** The enqueued asset
+  version was a hardcoded `1.0.0`, so browsers kept serving cached CSS
+  and JS across releases. Both call sites now read `WC_MAYA_VERSION`.
+
+### Changed
+
+- **Org rename to RogueDex.** Composer package
+  `roguetech-philippines/woocommerce-maya-gateway` →
+  `roguedex-labs/woocommerce-maya-gateway`; PHP namespace
+  `RogueTechPhilippines\MayaGateway` → `RogueDex\MayaGateway`.
+
+  **No settings or order data are affected.** The gateway id
+  (`maya_checkout`), its settings option, the `_maya_*` order meta, the
+  `wc_maya_*` hooks, the `wc-maya/v1` webhook route and the
+  `wc-maya-gateway` text domain are all unchanged — they name the
+  product, not the org. Existing orders, saved credentials and the
+  webhook already registered with Maya keep working across the upgrade.
+
+  Consumers of the PHP API (anyone type-hinting or extending these
+  classes) must update their imports. Nobody hooking the documented
+  filters and actions needs to change anything.
+- `Update URI: false` so wordpress.org cannot serve updates for a
+  colliding plugin slug now that Composer manages this plugin.
+- Corrected the deprecated `GPL-3.0` SPDX id to `GPL-3.0-or-later`.
+- The release zip no longer carries dev files, and builds from
+  `composer.lock` so a given tag always produces the same bytes.
+
 ## [1.0.0] — 2026-05-26
 
 First production release. Rebuilt from the ground up against the legacy

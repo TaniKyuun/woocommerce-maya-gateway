@@ -4,13 +4,15 @@
 #
 # Produces `dist/wc-maya-gateway-<version>.zip` containing only the runtime
 # files: src/, vendor/ (composer install --no-dev), assets/, templates/,
-# languages/, the main plugin file, README, LICENSE, CHANGELOG. Dev files
-# (tests/, docs/, bin/, .git*, composer.lock, phpcs/phpunit configs, etc.)
-# are excluded.
+# languages/, the main plugin file, README, LICENSE, CHANGELOG.
+#
+# What counts as a dev file is defined once, by the `export-ignore` rules in
+# .gitattributes — the same rules that decide what a Composer install gets.
 #
 # Usage:
 #
-#     bin/build-release.sh
+#     bin/build-release.sh            # build HEAD
+#     bin/build-release.sh v1.1.0     # build a tag (what you want when releasing)
 #
 # Run it by hand when cutting a release, and attach dist/*.zip to the GitHub
 # Release. This zip is only for manual installs on sites that do not use
@@ -23,60 +25,48 @@ PLUGIN_DIR_NAME="woocommerce-maya-gateway"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="${ROOT_DIR}/dist"
 STAGING_DIR="${DIST_DIR}/${PLUGIN_DIR_NAME}"
+REF="${1:-HEAD}"
 
-# Read the Version: header out of the main plugin file.
-VERSION="$(grep -E '^[ ]*\*[ ]*Version:' "${ROOT_DIR}/wc-maya-payment-gateway.php" | head -n 1 | awk -F: '{ gsub(/^[ ]+|[ ]+$/, "", $2); print $2 }')"
-if [ -z "${VERSION}" ]; then
-    echo "Could not read plugin version from main plugin file." >&2
+if ! git -C "${ROOT_DIR}" rev-parse --verify --quiet "${REF}^{commit}" > /dev/null; then
+    echo "Not a commit: ${REF}" >&2
     exit 1
 fi
 
-echo "Building ${PLUGIN_SLUG} v${VERSION}…"
+# Read the Version: header from the ref being built, not the working tree — the
+# zip must describe the code it actually contains.
+VERSION="$(git -C "${ROOT_DIR}" show "${REF}:wc-maya-payment-gateway.php" \
+    | grep -E '^[ ]*\*[ ]*Version:' | head -n 1 | awk -F: '{ gsub(/^[ ]+|[ ]+$/, "", $2); print $2 }')"
+if [ -z "${VERSION}" ]; then
+    echo "Could not read the plugin version from ${REF}:wc-maya-payment-gateway.php." >&2
+    exit 1
+fi
+
+# Uncommitted work is not in `git archive` output, so say so rather than let
+# someone ship a zip that quietly omits the change they just made.
+if [ "${REF}" = "HEAD" ] && ! git -C "${ROOT_DIR}" diff-index --quiet HEAD --; then
+    echo "Warning: working tree has uncommitted changes; they are NOT in this build." >&2
+fi
+
+echo "Building ${PLUGIN_SLUG} v${VERSION} from ${REF}…"
 
 rm -rf "${DIST_DIR}"
 mkdir -p "${STAGING_DIR}"
 
-# rsync the runtime files into the staging dir, filtering out dev junk.
-RSYNC_EXCLUDES=(
-    --exclude='.git'
-    --exclude='.git/**'
-    --exclude='.gitignore'
-    --exclude='.gitattributes'
-    --exclude='.github'
-    --exclude='.github/**'
-    --exclude='.claude'
-    --exclude='.claude/**'
-    --exclude='.phpunit.cache'
-    --exclude='.phpunit.cache/**'
-    --exclude='.php-cs-fixer.cache'
-    --exclude='.php-cs-fixer.php'
-    --exclude='.idea'
-    --exclude='.vscode'
-    --exclude='tests'
-    --exclude='tests/**'
-    --exclude='docs'
-    --exclude='docs/**'
-    --exclude='bin'
-    --exclude='bin/**'
-    --exclude='dist'
-    --exclude='dist/**'
-    --exclude='vendor'
-    --exclude='vendor/**'
-    --exclude='node_modules'
-    --exclude='node_modules/**'
-    --exclude='phpcs.xml'
-    --exclude='phpunit.xml'
-)
-
-rsync -a "${RSYNC_EXCLUDES[@]}" "${ROOT_DIR}/" "${STAGING_DIR}/"
-
-# Build vendor/ without dev deps. We're staging — don't touch the repo.
+# Stage from `git archive`, not from the working tree.
 #
-# composer.lock is rsynced in (and deleted again below) so this resolves from
-# the lock rather than fresh from the network: same tag, same bytes, every time.
+# This ships tracked files only, and honours the `export-ignore` rules in
+# .gitattributes — the same rules GitHub applies when Composer downloads a
+# tagged zipball. So the zip and the Composer install contain the same files by
+# construction, instead of via a hand-maintained exclude list that has to be
+# kept in step with .gitattributes and that silently shipped whatever untracked
+# junk (editor dirs, tool caches, .env files) happened to be lying around.
+git -C "${ROOT_DIR}" archive --format=tar "${REF}" | tar -x -C "${STAGING_DIR}"
+
+# Build vendor/ without dev deps. Install from the lock so a given ref always
+# produces the same bytes rather than re-resolving against the network.
 # --no-interaction turns a blocked-plugin prompt into an honest failure instead
 # of a build that appears to hang.
-cp "${ROOT_DIR}/composer.lock" "${STAGING_DIR}/composer.lock"
+git -C "${ROOT_DIR}" show "${REF}:composer.lock" > "${STAGING_DIR}/composer.lock"
 ( cd "${STAGING_DIR}" && composer install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction --quiet )
 rm -f "${STAGING_DIR}/composer.lock"
 

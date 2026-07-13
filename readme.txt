@@ -6,7 +6,7 @@ Tested up to: 7.0
 Requires PHP: 8.3
 WC requires at least: 10.6
 WC tested up to: 10.7
-Stable tag: 1.0.0
+Stable tag: 1.1.0
 License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -72,6 +72,19 @@ narrowed below the 5-minute default).
 * `wc_maya_payment_confirmed` (action) — fired with `($order_id, $payload)` on a confirmed payment.
 
 == Changelog ==
+
+= 1.1.0 =
+* Fixed: a fatal error when the plugin was installed with Composer — it
+  required a bundled autoloader that a Composer install does not have.
+* Fixed: admin and block assets were cache-busted with a hardcoded version, so
+  browsers served stale CSS/JS after an upgrade.
+* Changed: the project moved to the RogueDex org. The Composer package is now
+  `roguedex-labs/woocommerce-maya-gateway` and the PHP namespace is
+  `RogueDex\MayaGateway`. Settings, orders and the registered webhook are
+  unaffected — the gateway id, option keys, order meta, hooks and webhook URL
+  are all unchanged.
+* Changed: `Update URI: false`, so wordpress.org cannot serve updates for a
+  colliding plugin slug.
 
 = 1.0.0 =
 * Initial release: hosted checkout, signed-webhook completion, manual capture,

@@ -1,10 +1,10 @@
 # Copyright (C) WooCommerce Maya Gateway
-# This file is distributed under the GPL-3.0 license.
+# This file is distributed under the GPL-3.0-or-later license.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Maya Gateway 1.0.0\n"
+"Project-Id-Version: WooCommerce Maya Gateway 1.1.0\n"
 "Report-Msgid-Bugs-To: https://github.com/roguedex-labs/woocommerce-maya-gateway/issues\n"
-"POT-Creation-Date: 2026-07-02 15:37+0800\n"
+"POT-Creation-Date: 2026-07-13 17:53+0800\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -50,7 +50,7 @@ msgstr ""
 msgid "Callback URL"
 msgstr ""
 
-#: src/Webhook/Registrar.php:72
+#: src/Webhook/Registrar.php:86
 msgid "Cannot register webhooks against an empty callback URL."
 msgstr ""
 
@@ -124,7 +124,7 @@ msgstr ""
 msgid "Disabled — the simulator is sandbox-only. Toggle \"Sandbox mode\" above to enable it."
 msgstr ""
 
-#: src/Admin/FieldRenderers.php:233
+#: src/Admin/FieldRenderers.php:234
 msgid "Dispatches a forged Maya payload through the webhook pipeline in-process. No Maya account is touched. Check WooCommerce → Status → Logs (source: wc-maya-gateway) to see what was dispatched."
 msgstr ""
 
@@ -228,7 +228,7 @@ msgstr ""
 msgid "Maya PAYMENT_SUCCESS webhook arrived with a mismatched amount/currency (expected %1$s %3$s, received %2$s %4$s). Order state left unchanged for manual review."
 msgstr ""
 
-#: src/Webhook/EventDispatcher.php:367
+#: src/Webhook/EventDispatcher.php:368
 msgid "Maya authorization failed."
 msgstr ""
 
@@ -276,11 +276,15 @@ msgstr ""
 msgid "Maya partial capture confirmed: %1$s of %2$s captured. Order will complete when the remaining balance is captured."
 msgstr ""
 
+#: src/Webhook/EventDispatcher.php:367
+msgid "Maya payment cancelled."
+msgstr ""
+
 #: src/Webhook/EventDispatcher.php:366
 msgid "Maya payment expired."
 msgstr ""
 
-#: src/Webhook/EventDispatcher.php:368
+#: src/Webhook/EventDispatcher.php:369
 msgid "Maya payment failed."
 msgstr ""
 
@@ -374,6 +378,10 @@ msgstr ""
 
 #: src/Admin/Ajax/CapturePayment.php:51
 msgid "Order id is required."
+msgstr ""
+
+#: src/Admin/FieldRenderers.php:220
+msgid "PAYMENT_CANCELLED"
 msgstr ""
 
 #: src/Admin/FieldRenderers.php:219
@@ -474,7 +482,7 @@ msgstr ""
 msgid "Show"
 msgstr ""
 
-#: src/Admin/FieldRenderers.php:227
+#: src/Admin/FieldRenderers.php:228
 msgid "Simulate webhook"
 msgstr ""
 
@@ -482,7 +490,7 @@ msgstr ""
 msgid "Simulate webhook (sandbox only)"
 msgstr ""
 
-#: src/Webhook/Simulator.php:49
+#: src/Webhook/Simulator.php:50
 msgid "Simulator can only run in sandbox mode."
 msgstr ""
 
@@ -531,7 +539,7 @@ msgstr ""
 msgid "Unexpected response from the server."
 msgstr ""
 
-#: src/Webhook/Simulator.php:58
+#: src/Webhook/Simulator.php:59
 msgid "Unsupported simulator status \"%s\"."
 msgstr ""
 
@@ -561,6 +569,10 @@ msgstr ""
 
 #: src/Admin/FormFields.php:104
 msgid "Webhooks"
+msgstr ""
+
+#: wc-maya-payment-gateway.php:79
+msgid "WooCommerce Maya Gateway could not load its classes. Install it with Composer, or use the release zip."
 msgstr ""
 
 #: src/Plugin.php:90

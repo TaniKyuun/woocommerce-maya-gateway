@@ -4,7 +4,7 @@
  * Plugin Name:       WooCommerce Maya Gateway
  * Plugin URI:        https://github.com/roguedex-labs/woocommerce-maya-gateway
  * Description:       Maya payment gateway for WooCommerce (Philippines).
- * Version:           1.0.0
+ * Version:           1.1.0
  * Author:            RogueDex
  * Author URI:        https://github.com/roguedex-labs
  * License:           GPL-3.0-or-later
@@ -30,7 +30,7 @@ define('WC_MAYA_PLUGIN_FILE', __FILE__);
 
 // Keep in step with the Version: header above, readme.txt's Stable tag, and the
 // CHANGELOG. Asset enqueues read this for cache-busting.
-define('WC_MAYA_VERSION', '1.0.0');
+define('WC_MAYA_VERSION', '1.1.0');
 
 /**
  * Declare WooCommerce feature compatibility.
