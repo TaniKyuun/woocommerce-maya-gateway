@@ -204,9 +204,11 @@ final class MayaBlocksPaymentMethod extends AbstractPaymentMethodType
     }
 
     /**
-     * Cache-busting version for the block assets. `WC_MAYA_VERSION` comes from
-     * the main plugin file, which does not run under the unit-test bootstrap —
-     * hence the guard.
+     * Cache-busting version for the block assets.
+     *
+     * `WC_MAYA_VERSION` is defined by the main plugin file, and by
+     * tests/bootstrap.php for the unit tests — the guard is belt-and-braces for
+     * anything that loads this class through the autoloader alone.
      */
     private static function asset_version(): string
     {

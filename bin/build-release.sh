@@ -43,7 +43,8 @@ fi
 
 # Uncommitted work is not in `git archive` output, so say so rather than let
 # someone ship a zip that quietly omits the change they just made.
-if [ "${REF}" = "HEAD" ] && ! git -C "${ROOT_DIR}" diff-index --quiet HEAD --; then
+git -C "${ROOT_DIR}" update-index -q --refresh || true
+if ! git -C "${ROOT_DIR}" diff-index --quiet HEAD --; then
     echo "Warning: working tree has uncommitted changes; they are NOT in this build." >&2
 fi
 
@@ -62,12 +63,30 @@ mkdir -p "${STAGING_DIR}"
 # junk (editor dirs, tool caches, .env files) happened to be lying around.
 git -C "${ROOT_DIR}" archive --format=tar "${REF}" | tar -x -C "${STAGING_DIR}"
 
+# git archive reads export-ignore from the tree it is archiving, so a ref that
+# predates those rules (an older release line, a hotfix branch cut before them)
+# stages the whole repo and would ship tests/, docs/ and bin/ to merchants.
+# Fail loudly rather than quietly building a bad zip.
+for unwanted in tests docs bin phpcs.xml phpunit.xml .php-cs-fixer.php; do
+    if [ -e "${STAGING_DIR}/${unwanted}" ]; then
+        echo "Refusing to build: '${unwanted}' was staged from ${REF}." >&2
+        echo "That ref has no export-ignore rules for it — cherry-pick them before releasing from it." >&2
+        exit 1
+    fi
+done
+
 # Build vendor/ without dev deps. Install from the lock so a given ref always
 # produces the same bytes rather than re-resolving against the network.
 # --no-interaction turns a blocked-plugin prompt into an honest failure instead
 # of a build that appears to hang.
 git -C "${ROOT_DIR}" show "${REF}:composer.lock" > "${STAGING_DIR}/composer.lock"
-( cd "${STAGING_DIR}" && composer install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction --quiet )
+(
+    cd "${STAGING_DIR}"
+    # A lock that has drifted from composer.json means the "same ref, same
+    # bytes" guarantee above is a fiction. composer install only warns.
+    composer validate --check-lock --no-check-all --no-check-publish --quiet
+    composer install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction --quiet
+)
 rm -f "${STAGING_DIR}/composer.lock"
 
 # Strip ./vendor caches that composer leaves but the plugin doesn't need.

@@ -74,6 +74,12 @@ if (! class_exists(Plugin::class)) {
     add_action(
         'admin_notices',
         static function (): void {
+            // Only shown to someone who could actually act on it — a shop
+            // manager cannot reinstall the plugin.
+            if (! current_user_can('activate_plugins')) {
+                return;
+            }
+
             echo '<div class="error"><p>'
                 . esc_html__(
                     'WooCommerce Maya Gateway could not load its classes. Install it with Composer, or use the release zip.',
