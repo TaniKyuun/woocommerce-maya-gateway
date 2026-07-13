@@ -22,7 +22,8 @@
  *
  *     php bin/make-pot.php
  *
- * The output is committed; CI fails if it drifts vs. the source.
+ * The output is committed. Re-run this after changing any translatable string,
+ * and before cutting a release so the POT carries the new version.
  */
 
 declare(strict_types=1);

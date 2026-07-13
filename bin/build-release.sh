@@ -12,7 +12,9 @@
 #
 #     bin/build-release.sh
 #
-# CI calls this with no flags and uploads dist/*.zip as the release asset.
+# Run it by hand when cutting a release, and attach dist/*.zip to the GitHub
+# Release. This zip is only for manual installs on sites that do not use
+# Composer — a Composer install resolves the plugin straight from the git tag.
 
 set -euo pipefail
 
