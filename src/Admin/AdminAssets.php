@@ -39,7 +39,7 @@ class AdminAssets
         }
 
         $base = plugins_url('', WC_MAYA_PLUGIN_FILE);
-        $ver  = (string) (defined('WP_DEBUG') && WP_DEBUG ? time() : '1.0.0');
+        $ver  = self::asset_version();
 
         wp_enqueue_style('wc-maya-admin', $base . '/assets/css/maya-admin.css', [], $ver);
         wp_enqueue_script('wc-maya-admin', $base . '/assets/js/maya-admin.js', [ 'jquery' ], $ver, true);
@@ -79,6 +79,20 @@ class AdminAssets
                 ],
             ],
         );
+    }
+
+    /**
+     * Cache-busting version for the admin assets. `WC_MAYA_VERSION` comes from
+     * the main plugin file, which does not run under the unit-test bootstrap —
+     * hence the guard.
+     */
+    private static function asset_version(): string
+    {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            return (string) time();
+        }
+
+        return defined('WC_MAYA_VERSION') ? (string) WC_MAYA_VERSION : '0.0.0';
     }
 
     private static function is_maya_settings_screen(string $hook): bool

@@ -29,13 +29,23 @@ declare(strict_types=1);
 
 const TEXT_DOMAIN = 'wc-maya-gateway';
 const PLUGIN_NAME = 'WooCommerce Maya Gateway';
-const PLUGIN_VER  = '1.0.0';
 
-$root = dirname(__DIR__);
+$root       = dirname(__DIR__);
+$pluginFile = $root . '/wc-maya-payment-gateway.php';
+
+// Read the version from the plugin header — the single source of truth — so a
+// release bump can't leave the POT claiming a stale version.
+if (! preg_match('/^[ \t\/*#@]*Version:\s*(.+)$/mi', (string) file_get_contents($pluginFile), $m)) {
+    fwrite(STDERR, "Could not read the Version: header from {$pluginFile}.\n");
+    exit(1);
+}
+
+define('PLUGIN_VER', trim($m[1]));
+
 $dirs = [
     $root . '/src',
     $root . '/templates',
-    $root . '/wc-maya-payment-gateway.php',
+    $pluginFile,
 ];
 
 $strings = []; // msgid => ['references' => [...], 'plural' => ?, 'context' => ?]

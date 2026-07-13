@@ -203,8 +203,17 @@ final class MayaBlocksPaymentMethod extends AbstractPaymentMethodType
         return (string) apply_filters('wc_maya_blocks_icon_url', '');
     }
 
+    /**
+     * Cache-busting version for the block assets. `WC_MAYA_VERSION` comes from
+     * the main plugin file, which does not run under the unit-test bootstrap —
+     * hence the guard.
+     */
     private static function asset_version(): string
     {
-        return (defined('WP_DEBUG') && WP_DEBUG) ? (string) time() : '1.0.0';
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            return (string) time();
+        }
+
+        return defined('WC_MAYA_VERSION') ? (string) WC_MAYA_VERSION : '0.0.0';
     }
 }

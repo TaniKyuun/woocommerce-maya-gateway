@@ -28,6 +28,10 @@ use RogueDex\MayaGateway\Plugin;
 
 define('WC_MAYA_PLUGIN_FILE', __FILE__);
 
+// Keep in step with the Version: header above, readme.txt's Stable tag, and the
+// CHANGELOG. Asset enqueues read this for cache-busting.
+define('WC_MAYA_VERSION', '1.0.0');
+
 /**
  * Declare WooCommerce feature compatibility.
  *
