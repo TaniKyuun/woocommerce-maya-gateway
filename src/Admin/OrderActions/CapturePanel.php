@@ -3,17 +3,17 @@
 /**
  * "Capture" form panel rendered below the order totals.
  *
- * @package RogueTechPhilippines\MayaGateway\Admin\OrderActions
+ * @package RogueDex\MayaGateway\Admin\OrderActions
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Admin\OrderActions;
+namespace RogueDex\MayaGateway\Admin\OrderActions;
 
-use RogueTechPhilippines\MayaGateway\Gateway\MayaGateway;
-use RogueTechPhilippines\MayaGateway\Value\AuthorizationType;
-use RogueTechPhilippines\MayaGateway\Value\Money;
-use RogueTechPhilippines\MayaGateway\Value\PaymentRecord;
+use RogueDex\MayaGateway\Gateway\MayaGateway;
+use RogueDex\MayaGateway\Value\AuthorizationType;
+use RogueDex\MayaGateway\Value\Money;
+use RogueDex\MayaGateway\Value\PaymentRecord;
 use WC_Order;
 
 /**

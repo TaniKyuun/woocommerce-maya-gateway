@@ -3,12 +3,12 @@
 /**
  * Request-reference / idempotency-key helpers.
  *
- * @package RogueTechPhilippines\MayaGateway\Util
+ * @package RogueDex\MayaGateway\Util
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Util;
+namespace RogueDex\MayaGateway\Util;
 
 /**
  * Builders for Maya's `requestReferenceNumber` field.

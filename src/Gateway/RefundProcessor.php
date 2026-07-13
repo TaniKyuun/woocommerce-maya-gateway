@@ -4,19 +4,19 @@
  * Smart-picks void vs refund for a WC refund request, with partial-amount
  * splitting across multiple captured payments.
  *
- * @package RogueTechPhilippines\MayaGateway\Gateway
+ * @package RogueDex\MayaGateway\Gateway
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Gateway;
+namespace RogueDex\MayaGateway\Gateway;
 
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Payments;
-use RogueTechPhilippines\MayaGateway\Util\IdempotencyKey;
-use RogueTechPhilippines\MayaGateway\Util\Logger;
-use RogueTechPhilippines\MayaGateway\Value\AuthorizationType;
-use RogueTechPhilippines\MayaGateway\Value\PaymentRecord;
-use RogueTechPhilippines\MayaGateway\Value\RefundRecord;
+use RogueDex\MayaGateway\Api\Endpoints\Payments;
+use RogueDex\MayaGateway\Util\IdempotencyKey;
+use RogueDex\MayaGateway\Util\Logger;
+use RogueDex\MayaGateway\Value\AuthorizationType;
+use RogueDex\MayaGateway\Value\PaymentRecord;
+use RogueDex\MayaGateway\Value\RefundRecord;
 use WC_Order;
 use WP_Error;
 

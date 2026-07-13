@@ -3,12 +3,12 @@
 /**
  * Maya signature payload flattener.
  *
- * @package RogueTechPhilippines\MayaGateway\Webhook
+ * @package RogueDex\MayaGateway\Webhook
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Webhook;
+namespace RogueDex\MayaGateway\Webhook;
 
 /**
  * Re-creates the exact byte sequence Maya signs on the sender side.

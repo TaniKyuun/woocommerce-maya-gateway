@@ -3,26 +3,26 @@
 /**
  * Plugin bootstrap.
  *
- * @package RogueTechPhilippines\MayaGateway
+ * @package RogueDex\MayaGateway
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway;
+namespace RogueDex\MayaGateway;
 
-use RogueTechPhilippines\MayaGateway\Admin\AdminAssets;
-use RogueTechPhilippines\MayaGateway\Admin\Ajax\CapturePayment;
-use RogueTechPhilippines\MayaGateway\Admin\Ajax\RefreshWebhooks;
-use RogueTechPhilippines\MayaGateway\Admin\Ajax\SimulateWebhook;
-use RogueTechPhilippines\MayaGateway\Admin\Ajax\TestConnection;
-use RogueTechPhilippines\MayaGateway\Admin\EventLog\EventLogPage;
-use RogueTechPhilippines\MayaGateway\Admin\OrderActions\CaptureButton;
-use RogueTechPhilippines\MayaGateway\Admin\OrderActions\CapturePanel;
-use RogueTechPhilippines\MayaGateway\Blocks\MayaBlocksPaymentMethod;
-use RogueTechPhilippines\MayaGateway\Gateway\MayaGateway;
-use RogueTechPhilippines\MayaGateway\Gateway\ReturnHandler;
-use RogueTechPhilippines\MayaGateway\Webhook\RetryQueue;
-use RogueTechPhilippines\MayaGateway\Webhook\WebhookHandler;
+use RogueDex\MayaGateway\Admin\AdminAssets;
+use RogueDex\MayaGateway\Admin\Ajax\CapturePayment;
+use RogueDex\MayaGateway\Admin\Ajax\RefreshWebhooks;
+use RogueDex\MayaGateway\Admin\Ajax\SimulateWebhook;
+use RogueDex\MayaGateway\Admin\Ajax\TestConnection;
+use RogueDex\MayaGateway\Admin\EventLog\EventLogPage;
+use RogueDex\MayaGateway\Admin\OrderActions\CaptureButton;
+use RogueDex\MayaGateway\Admin\OrderActions\CapturePanel;
+use RogueDex\MayaGateway\Blocks\MayaBlocksPaymentMethod;
+use RogueDex\MayaGateway\Gateway\MayaGateway;
+use RogueDex\MayaGateway\Gateway\ReturnHandler;
+use RogueDex\MayaGateway\Webhook\RetryQueue;
+use RogueDex\MayaGateway\Webhook\WebhookHandler;
 
 /**
  * Plugin entry point — wires services and exits.

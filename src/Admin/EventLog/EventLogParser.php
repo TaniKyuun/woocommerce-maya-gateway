@@ -3,12 +3,12 @@
 /**
  * WC log-file line parser used by the Maya admin event-log viewer.
  *
- * @package RogueTechPhilippines\MayaGateway\Admin\EventLog
+ * @package RogueDex\MayaGateway\Admin\EventLog
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Admin\EventLog;
+namespace RogueDex\MayaGateway\Admin\EventLog;
 
 /**
  * Parses lines from WC log files (the format emitted by

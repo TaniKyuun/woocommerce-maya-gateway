@@ -3,14 +3,14 @@
 /**
  * Customer-return handler: where Maya redirects the browser after checkout.
  *
- * @package RogueTechPhilippines\MayaGateway\Gateway
+ * @package RogueDex\MayaGateway\Gateway
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Gateway;
+namespace RogueDex\MayaGateway\Gateway;
 
-use RogueTechPhilippines\MayaGateway\Settings\SettingsHelper;
+use RogueDex\MayaGateway\Settings\SettingsHelper;
 use WC_Order;
 
 /**

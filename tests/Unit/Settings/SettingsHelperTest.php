@@ -3,16 +3,16 @@
 /**
  * Unit tests for the settings helper.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Settings
+ * @package RogueDex\MayaGateway\Tests\Unit\Settings
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Settings;
+namespace RogueDex\MayaGateway\Tests\Unit\Settings;
 
 use Brain\Monkey\Functions;
-use RogueTechPhilippines\MayaGateway\Settings\SettingsHelper;
-use RogueTechPhilippines\MayaGateway\Value\AuthorizationType;
+use RogueDex\MayaGateway\Settings\SettingsHelper;
+use RogueDex\MayaGateway\Value\AuthorizationType;
 use WC_Payment_Gateway;
 
 /**

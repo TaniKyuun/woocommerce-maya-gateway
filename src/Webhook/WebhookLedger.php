@@ -3,15 +3,15 @@
 /**
  * Per-order webhook event ledger.
  *
- * @package RogueTechPhilippines\MayaGateway\Webhook
+ * @package RogueDex\MayaGateway\Webhook
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Webhook;
+namespace RogueDex\MayaGateway\Webhook;
 
-use RogueTechPhilippines\MayaGateway\Gateway\MayaGateway;
-use RogueTechPhilippines\MayaGateway\Value\WebhookEvent;
+use RogueDex\MayaGateway\Gateway\MayaGateway;
+use RogueDex\MayaGateway\Value\WebhookEvent;
 use WC_Order;
 
 /**

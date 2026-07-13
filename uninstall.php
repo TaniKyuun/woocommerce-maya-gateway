@@ -13,7 +13,7 @@
  * merchant may still need after removing the plugin. It is removed naturally
  * when the orders themselves are deleted. See docs/go-live-runbook.md.
  *
- * @package RogueTechPhilippines\MayaGateway
+ * @package RogueDex\MayaGateway
  */
 
 declare(strict_types=1);

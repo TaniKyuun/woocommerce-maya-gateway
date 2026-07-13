@@ -190,11 +190,11 @@ function build_pot_header(): string
 
     $lines = [
         "# Copyright (C) {$plugin}",
-        '# This file is distributed under the GPL-3.0 license.',
+        '# This file is distributed under the GPL-3.0-or-later license.',
         'msgid ""',
         'msgstr ""',
         '"Project-Id-Version: ' . $plugin . ' ' . $ver . '\n"',
-        '"Report-Msgid-Bugs-To: https://github.com/RogueTech-Philippines/woocommerce-maya-gateway/issues\n"',
+        '"Report-Msgid-Bugs-To: https://github.com/roguedex-labs/woocommerce-maya-gateway/issues\n"',
         '"POT-Creation-Date: ' . $today . '\n"',
         '"MIME-Version: 1.0\n"',
         '"Content-Type: text/plain; charset=UTF-8\n"',

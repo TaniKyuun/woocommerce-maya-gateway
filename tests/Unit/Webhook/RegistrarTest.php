@@ -3,19 +3,19 @@
 /**
  * Unit tests for the webhook Registrar.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook
+ * @package RogueDex\MayaGateway\Tests\Unit\Webhook
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook;
+namespace RogueDex\MayaGateway\Tests\Unit\Webhook;
 
 use Brain\Monkey\Functions;
 use Mockery;
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Webhooks;
-use RogueTechPhilippines\MayaGateway\Util\Logger;
-use RogueTechPhilippines\MayaGateway\Value\WebhookRecord;
-use RogueTechPhilippines\MayaGateway\Webhook\Registrar;
+use RogueDex\MayaGateway\Api\Endpoints\Webhooks;
+use RogueDex\MayaGateway\Util\Logger;
+use RogueDex\MayaGateway\Value\WebhookRecord;
+use RogueDex\MayaGateway\Webhook\Registrar;
 use WP_Error;
 
 beforeEach(function (): void {

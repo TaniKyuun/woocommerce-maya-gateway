@@ -3,12 +3,12 @@
 /**
  * Webhook event-name enum.
  *
- * @package RogueTechPhilippines\MayaGateway\Value
+ * @package RogueDex\MayaGateway\Value
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Value;
+namespace RogueDex\MayaGateway\Value;
 
 /**
  * Event names Maya posts to our webhook endpoint.

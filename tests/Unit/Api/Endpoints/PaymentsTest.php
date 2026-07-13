@@ -3,18 +3,18 @@
 /**
  * Unit tests for the Payments endpoint wrapper.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Api\Endpoints
+ * @package RogueDex\MayaGateway\Tests\Unit\Api\Endpoints
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Api\Endpoints;
+namespace RogueDex\MayaGateway\Tests\Unit\Api\Endpoints;
 
 use Mockery;
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Payments;
-use RogueTechPhilippines\MayaGateway\Api\MayaApiClient;
-use RogueTechPhilippines\MayaGateway\Value\PaymentRecord;
-use RogueTechPhilippines\MayaGateway\Value\RefundRecord;
+use RogueDex\MayaGateway\Api\Endpoints\Payments;
+use RogueDex\MayaGateway\Api\MayaApiClient;
+use RogueDex\MayaGateway\Value\PaymentRecord;
+use RogueDex\MayaGateway\Value\RefundRecord;
 use WP_Error;
 
 test('get_by_rrn GETs /payments/v1/payment-rrns/{rrn} with the secret key and decodes records', function (): void {

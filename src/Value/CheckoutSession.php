@@ -3,12 +3,12 @@
 /**
  * Checkout-session value object.
  *
- * @package RogueTechPhilippines\MayaGateway\Value
+ * @package RogueDex\MayaGateway\Value
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Value;
+namespace RogueDex\MayaGateway\Value;
 
 /**
  * Parsed result of POST /checkout/v1/checkouts.

@@ -1,5 +1,5 @@
 === WooCommerce Maya Gateway ===
-Contributors: roguetechphilippines
+Contributors: roguedex
 Tags: woocommerce, payment gateway, maya, paymaya, philippines
 Requires at least: 6.9
 Tested up to: 7.0
@@ -7,7 +7,7 @@ Requires PHP: 8.3
 WC requires at least: 10.6
 WC tested up to: 10.7
 Stable tag: 1.0.0
-License: GPL-3.0
+License: GPL-3.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
 Accept Maya (cards, e-wallets, QR Ph) payments in WooCommerce via Maya's hosted checkout, with signed-webhook order completion, manual capture, and refunds.

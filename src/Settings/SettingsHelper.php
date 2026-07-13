@@ -3,14 +3,14 @@
 /**
  * Settings accessor.
  *
- * @package RogueTechPhilippines\MayaGateway\Settings
+ * @package RogueDex\MayaGateway\Settings
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Settings;
+namespace RogueDex\MayaGateway\Settings;
 
-use RogueTechPhilippines\MayaGateway\Value\AuthorizationType;
+use RogueDex\MayaGateway\Value\AuthorizationType;
 use WC_Payment_Gateway;
 
 /**

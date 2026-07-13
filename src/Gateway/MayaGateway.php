@@ -3,22 +3,22 @@
 /**
  * Maya WC_Payment_Gateway implementation.
  *
- * @package RogueTechPhilippines\MayaGateway\Gateway
+ * @package RogueDex\MayaGateway\Gateway
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Gateway;
+namespace RogueDex\MayaGateway\Gateway;
 
-use RogueTechPhilippines\MayaGateway\Admin\FieldRenderers;
-use RogueTechPhilippines\MayaGateway\Admin\FormFields;
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Checkouts;
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Payments;
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Webhooks;
-use RogueTechPhilippines\MayaGateway\Api\MayaApiClient;
-use RogueTechPhilippines\MayaGateway\Settings\SettingsHelper;
-use RogueTechPhilippines\MayaGateway\Util\Logger;
-use RogueTechPhilippines\MayaGateway\Webhook\Registrar;
+use RogueDex\MayaGateway\Admin\FieldRenderers;
+use RogueDex\MayaGateway\Admin\FormFields;
+use RogueDex\MayaGateway\Api\Endpoints\Checkouts;
+use RogueDex\MayaGateway\Api\Endpoints\Payments;
+use RogueDex\MayaGateway\Api\Endpoints\Webhooks;
+use RogueDex\MayaGateway\Api\MayaApiClient;
+use RogueDex\MayaGateway\Settings\SettingsHelper;
+use RogueDex\MayaGateway\Util\Logger;
+use RogueDex\MayaGateway\Webhook\Registrar;
 use WC_Admin_Settings;
 use WC_Order;
 use WC_Payment_Gateway;
@@ -43,7 +43,7 @@ class MayaGateway extends WC_Payment_Gateway
 
     /**
      * Per-order log of terminally-processed webhook events (JSON list). Written
-     * by {@see \RogueTechPhilippines\MayaGateway\Webhook\WebhookLedger}; used for
+     * by {@see \RogueDex\MayaGateway\Webhook\WebhookLedger}; used for
      * replay de-duplication, an order "Maya event history", and as the seed for
      * a future settlement-reconciliation view.
      */

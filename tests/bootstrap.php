@@ -3,7 +3,7 @@
 /**
  * Pest / PHPUnit bootstrap.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests
+ * @package RogueDex\MayaGateway\Tests
  */
 
 declare(strict_types=1);
