@@ -206,7 +206,7 @@ test('former simulator header still requires a valid signature', function (): vo
     $result = WebhookHandler::process(
         $body,
         [
-            'x-simulated-webhook'             => 'true',
+            'x-simulated-webhook'            => 'true',
             WebhookHandler::HEADER_TIMESTAMP => wc_maya_fresh_timestamp(),
             WebhookHandler::HEADER_SIGNATURE => 'nonce=n,v1=ab',
         ],

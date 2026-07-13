@@ -170,8 +170,8 @@ test('inbound webhook card data and PII are redacted from the logged payload', f
                 'id'      => 'src_1',
                 'details' => [ 'maskedPan' => '440000******0000', 'scheme' => 'visa' ],
             ],
-            'receipt'                => [ 'transactionId' => 'txn_9' ],
-            'buyer'                  => [ 'firstName' => 'Juan', 'lastName' => 'Dela Cruz' ],
+            'receipt' => [ 'transactionId' => 'txn_9' ],
+            'buyer'   => [ 'firstName' => 'Juan', 'lastName' => 'Dela Cruz' ],
         ],
     ]);
 
@@ -193,15 +193,15 @@ test('the live COMPLETED-webhook payload redacts paymentDetails and paymentToken
     // Shape confirmed from a real Maya sandbox COMPLETED webhook.
     (new Logger(true))->info('Webhook verified', [
         'payload' => [
-            'id'                        => 'chk_1',
-            'status'                    => 'COMPLETED',
-            'paymentStatus'             => 'PAYMENT_SUCCESS',
-            'requestReferenceNumber'    => '333',
-            'receiptNumber'             => 'c79ea6301ee4',
+            'id'                         => 'chk_1',
+            'status'                     => 'COMPLETED',
+            'paymentStatus'              => 'PAYMENT_SUCCESS',
+            'requestReferenceNumber'     => '333',
+            'receiptNumber'              => 'c79ea6301ee4',
             'transactionReferenceNumber' => '3f8c544f-dbc0-4448',
-            'approvalCode'              => '00001234',
-            'paymentTokenId'            => 'omir7kTziOt4d7fbxv6EXYgjSQMhj6jj',
-            'paymentDetails'            => [ 'last4' => '1112', 'maskedCardNumber' => '******1112', 'cardType' => 'visa' ],
+            'approvalCode'               => '00001234',
+            'paymentTokenId'             => 'omir7kTziOt4d7fbxv6EXYgjSQMhj6jj',
+            'paymentDetails'             => [ 'last4' => '1112', 'maskedCardNumber' => '******1112', 'cardType' => 'visa' ],
         ],
     ]);
 

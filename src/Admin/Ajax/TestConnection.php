@@ -56,7 +56,7 @@ class TestConnection
         $public_key = isset($_POST['public_key']) ? trim(sanitize_text_field(wp_unslash($_POST['public_key']))) : '';
         $secret_key = isset($_POST['secret_key']) ? trim(sanitize_text_field(wp_unslash($_POST['secret_key']))) : '';
         $is_sandbox = isset($_POST['is_sandbox']) && 'yes' === sanitize_key(wp_unslash($_POST['is_sandbox']));
-        $debug_log  = isset($_POST['debug_log']) && 'yes' === sanitize_key(wp_unslash($_POST['debug_log']));
+        $debug_log  = isset($_POST['debug_log'])  && 'yes'  === sanitize_key(wp_unslash($_POST['debug_log']));
 
         if ('' !== $public_key && '' !== $secret_key) {
             $client = new MayaApiClient($public_key, $secret_key, $is_sandbox, new Logger($debug_log));

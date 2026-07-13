@@ -109,8 +109,8 @@ final class WebhookLedger
             'key'         => self::entry_key($event, $payload),
             'event'       => $event->value,
             'action'      => $action,
-            'payment_id'  => isset($payload['id']) && is_string($payload['id']) ? $payload['id'] : null,
-            'amount'      => isset($payload['amount']) && is_numeric($payload['amount']) ? (float) $payload['amount'] : null,
+            'payment_id'  => isset($payload['id'])       && is_string($payload['id']) ? $payload['id'] : null,
+            'amount'      => isset($payload['amount'])   && is_numeric($payload['amount']) ? (float) $payload['amount'] : null,
             'currency'    => isset($payload['currency']) && is_string($payload['currency']) ? strtoupper($payload['currency']) : null,
             'received_at' => gmdate('c'),
         ];
