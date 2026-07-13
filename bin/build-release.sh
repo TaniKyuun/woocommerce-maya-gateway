@@ -39,8 +39,11 @@ RSYNC_EXCLUDES=(
     --exclude='.git'
     --exclude='.git/**'
     --exclude='.gitignore'
+    --exclude='.gitattributes'
     --exclude='.github'
     --exclude='.github/**'
+    --exclude='.claude'
+    --exclude='.claude/**'
     --exclude='.phpunit.cache'
     --exclude='.phpunit.cache/**'
     --exclude='.php-cs-fixer.cache'
@@ -55,17 +58,25 @@ RSYNC_EXCLUDES=(
     --exclude='bin/**'
     --exclude='dist'
     --exclude='dist/**'
+    --exclude='vendor'
+    --exclude='vendor/**'
     --exclude='node_modules'
     --exclude='node_modules/**'
     --exclude='phpcs.xml'
     --exclude='phpunit.xml'
-    --exclude='composer.lock'
 )
 
 rsync -a "${RSYNC_EXCLUDES[@]}" "${ROOT_DIR}/" "${STAGING_DIR}/"
 
-# Rebuild vendor/ without dev deps. We're staging — don't touch the repo.
-( cd "${STAGING_DIR}" && composer install --no-dev --optimize-autoloader --classmap-authoritative --quiet )
+# Build vendor/ without dev deps. We're staging — don't touch the repo.
+#
+# composer.lock is rsynced in (and deleted again below) so this resolves from
+# the lock rather than fresh from the network: same tag, same bytes, every time.
+# --no-interaction turns a blocked-plugin prompt into an honest failure instead
+# of a build that appears to hang.
+cp "${ROOT_DIR}/composer.lock" "${STAGING_DIR}/composer.lock"
+( cd "${STAGING_DIR}" && composer install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction --quiet )
+rm -f "${STAGING_DIR}/composer.lock"
 
 # Strip ./vendor caches that composer leaves but the plugin doesn't need.
 # `set -e` aborts on any failure here. The hygiene strip below is best-effort
