@@ -23,12 +23,10 @@ declare(strict_types=1);
 
 defined('ABSPATH') || exit;
 
-define('WC_MAYA_PLUGIN_FILE', __FILE__);
-
-require_once __DIR__ . '/vendor/autoload.php';
-
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use RogueDex\MayaGateway\Plugin;
+
+define('WC_MAYA_PLUGIN_FILE', __FILE__);
 
 /**
  * Declare WooCommerce feature compatibility.
@@ -37,6 +35,11 @@ use RogueDex\MayaGateway\Plugin;
  *   — no direct `posts`/`postmeta` SQL — so the gateway is HPOS-safe.
  * - `cart_checkout_blocks`: enables the block-based Cart and Checkout entry
  *   that {@see \RogueDex\MayaGateway\Blocks\MayaBlocksPaymentMethod} provides.
+ *
+ * This runs before the autoload guard below: it needs nothing of ours, and if
+ * the guard ever trips while the plugin is still active, staying silent here
+ * would let WooCommerce read us as HPOS-incompatible and disable HPOS
+ * store-wide.
  */
 add_action(
     'before_woocommerce_init',
@@ -47,5 +50,36 @@ add_action(
         }
     },
 );
+
+/*
+ * Composer-managed installs (Bedrock) autoload this plugin from the project
+ * root: Composer merges our PSR-4 map into the root autoloader, resolving it
+ * against the installed path, and wp-config.php requires that autoloader before
+ * WordPress boots. There is no vendor/ inside the plugin directory in that
+ * layout — a bundled one exists only in the standalone release zip. So this
+ * require is conditional, and the class check below is what actually decides
+ * whether we can run.
+ */
+$wc_maya_autoload = __DIR__ . '/vendor/autoload.php';
+
+if (is_readable($wc_maya_autoload)) {
+    require_once $wc_maya_autoload;
+}
+
+if (! class_exists(Plugin::class)) {
+    add_action(
+        'admin_notices',
+        static function (): void {
+            echo '<div class="error"><p>'
+                . esc_html__(
+                    'WooCommerce Maya Gateway could not load its classes. Install it with Composer, or use the release zip.',
+                    'wc-maya-gateway',
+                )
+                . '</p></div>';
+        },
+    );
+
+    return;
+}
 
 add_action('plugins_loaded', [ Plugin::class, 'init' ]);
