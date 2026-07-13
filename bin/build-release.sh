@@ -3,8 +3,14 @@
 # Build a production-installable zip of the plugin.
 #
 # Produces `dist/wc-maya-gateway-<version>.zip` containing only the runtime
-# files: src/, vendor/ (composer install --no-dev), assets/, templates/,
-# languages/, the main plugin file, README, LICENSE, CHANGELOG.
+# files: src/, assets/, templates/, languages/, the main plugin file, README,
+# LICENSE, CHANGELOG.
+#
+# There is no vendor/ in the zip and no Composer step in this build. The plugin
+# has no runtime dependencies, so the only thing a vendor/ would have carried is
+# Composer's own class-loader — ~50KB of machinery to map one PSR-4 prefix onto
+# src/. The main plugin file does that itself in ten lines when nothing else
+# already has. (Under Composer, Bedrock's project-root autoloader does it.)
 #
 # What counts as a dev file is defined once, by the `export-ignore` rules in
 # .gitattributes — the same rules that decide what a Composer install gets.
@@ -75,33 +81,18 @@ for unwanted in tests docs bin phpcs.xml phpunit.xml .php-cs-fixer.php; do
     fi
 done
 
-# Build vendor/ without dev deps. Install from the lock so a given ref always
-# produces the same bytes rather than re-resolving against the network.
-# --no-interaction turns a blocked-plugin prompt into an honest failure instead
-# of a build that appears to hang.
-git -C "${ROOT_DIR}" show "${REF}:composer.lock" > "${STAGING_DIR}/composer.lock"
-(
-    cd "${STAGING_DIR}"
-    # A lock that has drifted from composer.json means the "same ref, same
-    # bytes" guarantee above is a fiction. composer install only warns.
-    composer validate --check-lock --no-check-all --no-check-publish --quiet
-    composer install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction --quiet
-)
-rm -f "${STAGING_DIR}/composer.lock"
-
-# Strip ./vendor caches that composer leaves but the plugin doesn't need.
-# `set -e` aborts on any failure here. The hygiene strip below is best-effort
-# (a stray locked file shouldn't fail the build), so we capture the exit code
-# and warn loudly instead of silencing with `|| true` — silent suppression
-# masked the case where a permission error left dev files in the release zip.
-find "${STAGING_DIR}/vendor" -type d \( -name 'tests' -o -name 'test' -o -name 'docs' -o -name 'doc' \) -prune -exec rm -rf {} +
-
-set +e
-find "${STAGING_DIR}/vendor" -type f \( -iname 'CHANGELOG*' -o -iname '*.md' -o -name 'phpunit.xml*' -o -name 'phpstan.neon*' -o -name '.php-cs-fixer*' \) -delete
-FIND_EXIT=$?
-set -e
-if [ "${FIND_EXIT}" -ne 0 ]; then
-    echo "Warning: vendor file-strip exited ${FIND_EXIT}; release zip may include dev files." >&2
+# The zip ships no vendor/, because the plugin has no runtime dependencies:
+# every entry in composer.json's `require` other than `php` would be a package
+# the main file's built-in PSR-4 autoloader cannot load. Adding one silently
+# turns the zip into a plugin that fatals on a missing class, so stop here
+# instead — whoever added it needs to decide how it gets shipped.
+REQUIRES="$(git -C "${ROOT_DIR}" show "${REF}:composer.json" \
+    | php -r 'echo implode(" ", array_diff(array_keys(json_decode(file_get_contents("php://stdin"), true)["require"] ?? []), ["php"]));' 2>/dev/null || true)"
+if [ -n "${REQUIRES}" ]; then
+    echo "Refusing to build: composer.json has runtime dependencies (${REQUIRES})." >&2
+    echo "This zip ships no vendor/ — the plugin autoloads only its own src/." >&2
+    echo "Bundle a vendor/ here, or drop the dependency." >&2
+    exit 1
 fi
 
 ZIP_NAME="${PLUGIN_SLUG}-${VERSION}.zip"

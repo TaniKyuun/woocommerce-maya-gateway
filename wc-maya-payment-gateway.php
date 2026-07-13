@@ -56,18 +56,34 @@ add_action(
 );
 
 /*
- * Composer-managed installs (Bedrock) autoload this plugin from the project
- * root: Composer merges our PSR-4 map into the root autoloader, resolving it
- * against the installed path, and wp-config.php requires that autoloader before
- * WordPress boots. There is no vendor/ inside the plugin directory in that
- * layout — a bundled one exists only in the standalone release zip. So this
- * require is conditional, and the class check below is what actually decides
- * whether we can run.
+ * Autoloading. The plugin ships no vendor/ — it has no runtime dependencies
+ * (`require` in composer.json is php and nothing else), so mapping one PSR-4
+ * prefix onto src/ is the whole of what it needs.
+ *
+ * Under Composer (Bedrock) that map is merged into the project-root autoloader,
+ * which wp-config.php loads before WordPress boots — the classes are already
+ * reachable by the time we get here, and the check below short-circuits.
+ *
+ * Installed any other way (the release zip, a plain checkout), nothing has
+ * registered the map, so we do it ourselves.
+ *
+ * bin/build-release.sh refuses to build if a runtime dependency is ever added,
+ * because this autoloader would have nowhere to load it from.
  */
-$wc_maya_autoload = __DIR__ . '/vendor/autoload.php';
+if (! class_exists(Plugin::class)) {
+    spl_autoload_register(static function (string $class): void {
+        $prefix = 'RogueDex\\MayaGateway\\';
 
-if (is_readable($wc_maya_autoload)) {
-    require_once $wc_maya_autoload;
+        if (! str_starts_with($class, $prefix)) {
+            return;
+        }
+
+        $path = __DIR__ . '/src/' . str_replace('\\', '/', substr($class, strlen($prefix))) . '.php';
+
+        if (is_readable($path)) {
+            require_once $path;
+        }
+    });
 }
 
 if (! class_exists(Plugin::class)) {
