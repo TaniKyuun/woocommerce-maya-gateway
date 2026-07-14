@@ -3,12 +3,12 @@
 /**
  * Refund-record value object.
  *
- * @package RogueTechPhilippines\MayaGateway\Value
+ * @package RogueDex\MayaGateway\Value
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Value;
+namespace RogueDex\MayaGateway\Value;
 
 /**
  * Parsed item from GET `/payments/v1/payments/{id}/refunds`.

@@ -3,21 +3,21 @@
 /**
  * AJAX handler for the Test Connection button.
  *
- * @package RogueTechPhilippines\MayaGateway\Admin\Ajax
+ * @package RogueDex\MayaGateway\Admin\Ajax
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Admin\Ajax;
+namespace RogueDex\MayaGateway\Admin\Ajax;
 
-use RogueTechPhilippines\MayaGateway\Admin\AdminAssets;
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Checkouts;
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Webhooks;
-use RogueTechPhilippines\MayaGateway\Api\MayaApiClient;
-use RogueTechPhilippines\MayaGateway\Gateway\MayaGateway;
-use RogueTechPhilippines\MayaGateway\Util\IdempotencyKey;
-use RogueTechPhilippines\MayaGateway\Util\Logger;
-use RogueTechPhilippines\MayaGateway\Value\Money;
+use RogueDex\MayaGateway\Admin\AdminAssets;
+use RogueDex\MayaGateway\Api\Endpoints\Checkouts;
+use RogueDex\MayaGateway\Api\Endpoints\Webhooks;
+use RogueDex\MayaGateway\Api\MayaApiClient;
+use RogueDex\MayaGateway\Gateway\MayaGateway;
+use RogueDex\MayaGateway\Util\IdempotencyKey;
+use RogueDex\MayaGateway\Util\Logger;
+use RogueDex\MayaGateway\Value\Money;
 use WP_Error;
 
 /**
@@ -56,7 +56,7 @@ class TestConnection
         $public_key = isset($_POST['public_key']) ? trim(sanitize_text_field(wp_unslash($_POST['public_key']))) : '';
         $secret_key = isset($_POST['secret_key']) ? trim(sanitize_text_field(wp_unslash($_POST['secret_key']))) : '';
         $is_sandbox = isset($_POST['is_sandbox']) && 'yes' === sanitize_key(wp_unslash($_POST['is_sandbox']));
-        $debug_log  = isset($_POST['debug_log']) && 'yes' === sanitize_key(wp_unslash($_POST['debug_log']));
+        $debug_log  = isset($_POST['debug_log'])  && 'yes'  === sanitize_key(wp_unslash($_POST['debug_log']));
 
         if ('' !== $public_key && '' !== $secret_key) {
             $client = new MayaApiClient($public_key, $secret_key, $is_sandbox, new Logger($debug_log));

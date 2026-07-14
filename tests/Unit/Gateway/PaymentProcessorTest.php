@@ -3,22 +3,22 @@
 /**
  * Unit tests for the PaymentProcessor.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Gateway
+ * @package RogueDex\MayaGateway\Tests\Unit\Gateway
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Gateway;
+namespace RogueDex\MayaGateway\Tests\Unit\Gateway;
 
 use Brain\Monkey\Functions;
 use Mockery;
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Checkouts;
-use RogueTechPhilippines\MayaGateway\Gateway\MayaGateway;
-use RogueTechPhilippines\MayaGateway\Gateway\PaymentProcessor;
-use RogueTechPhilippines\MayaGateway\Settings\SettingsHelper;
-use RogueTechPhilippines\MayaGateway\Util\Logger;
-use RogueTechPhilippines\MayaGateway\Value\AuthorizationType;
-use RogueTechPhilippines\MayaGateway\Value\CheckoutSession;
+use RogueDex\MayaGateway\Api\Endpoints\Checkouts;
+use RogueDex\MayaGateway\Gateway\MayaGateway;
+use RogueDex\MayaGateway\Gateway\PaymentProcessor;
+use RogueDex\MayaGateway\Settings\SettingsHelper;
+use RogueDex\MayaGateway\Util\Logger;
+use RogueDex\MayaGateway\Value\AuthorizationType;
+use RogueDex\MayaGateway\Value\CheckoutSession;
 use WC_Order;
 use WC_Order_Item_Product;
 use WC_Payment_Gateway;

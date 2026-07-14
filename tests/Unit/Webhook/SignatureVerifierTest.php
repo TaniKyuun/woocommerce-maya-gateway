@@ -3,15 +3,15 @@
 /**
  * Unit tests for SignatureVerifier.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook
+ * @package RogueDex\MayaGateway\Tests\Unit\Webhook
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook;
+namespace RogueDex\MayaGateway\Tests\Unit\Webhook;
 
-use RogueTechPhilippines\MayaGateway\Webhook\PayloadFlattener;
-use RogueTechPhilippines\MayaGateway\Webhook\SignatureVerifier;
+use RogueDex\MayaGateway\Webhook\PayloadFlattener;
+use RogueDex\MayaGateway\Webhook\SignatureVerifier;
 
 /**
  * Generate a fresh RSA keypair so the verifier round-trip is real (not mocked).

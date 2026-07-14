@@ -5,6 +5,56 @@ All notable changes to **WooCommerce Maya Gateway** are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 the project loosely follows semantic versioning.
 
+## [1.1.0] — 2026-07-14
+
+The plugin is now installable as a Composer dependency, and the project
+has moved to the RogueDex org.
+
+### Fixed
+
+- **Fatal error when installed by Composer.** The main plugin file
+  required its own `vendor/autoload.php` unconditionally. A Composer
+  install has no `vendor/` inside the plugin directory — the classes are
+  autoloaded from the project root instead — so loading the plugin took
+  the whole site down. The plugin now registers its own PSR-4 autoloader
+  when nothing else has already provided its classes, and bails with an
+  admin notice rather than a fatal if it cannot load at all.
+- **Stale admin and block assets after an upgrade.** The enqueued asset
+  version was a hardcoded `1.0.0`, so browsers kept serving cached CSS
+  and JS across releases. Both call sites now read `WC_MAYA_VERSION`.
+
+### Changed
+
+- **Org rename to RogueDex.** Composer package
+  `roguetech-philippines/woocommerce-maya-gateway` →
+  `roguedex-labs/woocommerce-maya-gateway`; PHP namespace
+  `RogueTechPhilippines\MayaGateway` → `RogueDex\MayaGateway`.
+
+  **No settings or order data are affected.** The gateway id
+  (`maya_checkout`), its settings option, the `_maya_*` order meta, the
+  `wc_maya_*` hooks, the `wc-maya/v1` webhook route and the
+  `wc-maya-gateway` text domain are all unchanged — they name the
+  product, not the org. Existing orders, saved credentials and the
+  webhook already registered with Maya keep working across the upgrade.
+
+  Consumers of the PHP API (anyone type-hinting or extending these
+  classes) must update their imports. Nobody hooking the documented
+  filters and actions needs to change anything.
+- `Update URI: false` so wordpress.org cannot serve updates for a
+  colliding plugin slug now that Composer manages this plugin.
+- Corrected the deprecated `GPL-3.0` SPDX id to `GPL-3.0-or-later`.
+- **The plugin no longer ships a `vendor/` directory, in any install
+  mode.** It has no runtime dependencies — `require` is `php` and nothing
+  else — so the bundled `vendor/` was only ever Composer's own
+  class-loader, mapping one PSR-4 prefix onto `src/`. The main plugin
+  file now does that itself. The release zip is built with `git archive`
+  and needs no Composer step at all, and the build refuses to run if a
+  runtime dependency is ever added (there would be nowhere to load it
+  from).
+- The release zip no longer carries dev files. What ships is defined once,
+  by the `export-ignore` rules in `.gitattributes` — the same rules
+  GitHub applies to the tag zipball a Composer install downloads.
+
 ## [1.0.0] — 2026-05-26
 
 First production release. Rebuilt from the ground up against the legacy

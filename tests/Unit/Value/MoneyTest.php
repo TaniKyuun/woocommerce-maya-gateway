@@ -3,14 +3,14 @@
 /**
  * Unit tests for the Money value object.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Value
+ * @package RogueDex\MayaGateway\Tests\Unit\Value
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Value;
+namespace RogueDex\MayaGateway\Tests\Unit\Value;
 
-use RogueTechPhilippines\MayaGateway\Value\Money;
+use RogueDex\MayaGateway\Value\Money;
 
 test('from_array casts numeric strings to float', function (): void {
     $money = Money::from_array([ 'value' => '100.50', 'currency' => 'PHP' ]);

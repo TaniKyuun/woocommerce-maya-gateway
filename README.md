@@ -44,24 +44,50 @@ void / refund, block-based and classic checkout, HPOS, translatable.
 
 ## Installation
 
-### From a release build
+### With Composer (Bedrock, and any Composer-managed site)
 
-1. Download the latest `wc-maya-gateway-<version>.zip` from the project's
-   releases page.
+Add the repository and require the package in the **site's** root `composer.json`:
+
+```jsonc
+"repositories": [
+  { "type": "vcs", "url": "https://github.com/roguedex-labs/woocommerce-maya-gateway" }
+],
+"require": {
+  "roguedex-labs/woocommerce-maya-gateway": "^1.1"
+}
+```
+
+```bash
+composer update roguedex-labs/woocommerce-maya-gateway
+```
+
+`composer/installers` places it in the site's plugins directory. **Do not run
+`composer install` inside the plugin** — it has no runtime dependencies, and its
+classes are autoloaded from the project root.
+
+### From a release zip (sites not using Composer)
+
+1. Download `wc-maya-gateway-<version>.zip` from the
+   [releases page](https://github.com/roguedex-labs/woocommerce-maya-gateway/releases).
 2. WordPress admin → Plugins → Add New → Upload Plugin → choose the zip.
 3. Activate.
-4. WooCommerce → Settings → Payments → **Maya Checkout** → enter your
-   sandbox or production keys, click _Test connection_, then _Save changes_.
-   Saving (with both keys present and the gateway enabled) automatically
-   registers the five managed webhooks in your Maya Manager account.
+
+The zip is self-contained — no `vendor/`, nothing to install.
+
+### Either way, then configure
+
+WooCommerce → Settings → Payments → **Maya Checkout** → enter your sandbox or
+production keys, click _Test connection_, then _Save changes_. Saving (with both
+keys present and the gateway enabled) automatically registers the five managed
+webhooks in your Maya Manager account.
 
 ### From source (developers)
 
 ```bash
-git clone https://github.com/RogueTech-Philippines/woocommerce-maya-gateway.git \
+git clone https://github.com/roguedex-labs/woocommerce-maya-gateway.git \
     wp-content/plugins/woocommerce-maya-gateway
 cd wp-content/plugins/woocommerce-maya-gateway
-composer install
+composer install   # dev tooling only: pest, phpcs, php-cs-fixer
 ```
 
 Then activate in WP admin as above.
@@ -96,14 +122,15 @@ tour doc under [docs/rebuild-overview/](docs/rebuild-overview/).
 ./vendor/bin/pest
 ```
 
-The plugin ships **200+ Pest unit tests, ~600 assertions**, all pure-
-function or Brain-Monkey-stubbed. No WordPress test scaffold required.
+The plugin ships **244 Pest unit tests, 770 assertions**, all pure-function
+or Brain-Monkey-stubbed. No WordPress test scaffold required.
 
 ### Format
 
 ```bash
 composer format       # apply php-cs-fixer
-composer format:check # CI: fail on drift
+composer format:check # fail on drift
+composer lint         # phpcs (WordPress + WooCommerce standards)
 ```
 
 ### Regenerate the .pot translation template
@@ -116,17 +143,27 @@ Extracts every `__() / _e() / esc_html__() / esc_attr__() / _n() / _x()`
 call across `src/` and `templates/` into
 `languages/wc-maya-gateway.pot`.
 
-### Build a release zip
+### Cut a release
+
+**A release is a git tag** — Composer resolves it straight from GitHub, and there
+is no artifact to upload. See **[docs/releasing.md](docs/releasing.md)** for the
+full process: version bumps, tagging, rolling it out to a site, and rollback.
+
+To build the optional zip for non-Composer sites:
 
 ```bash
-bin/build-release.sh
+bin/build-release.sh          # HEAD
+bin/build-release.sh v1.1.0   # a tag
 ```
 
-Produces `dist/wc-maya-gateway-<version>.zip` containing only the
-runtime files: `src/`, a re-`composer install --no-dev`-ed `vendor/`,
-`assets/`, `templates/`, `languages/`, the main plugin file, README,
-LICENSE, CHANGELOG. Dev / docs / tests / bin are excluded.
+Produces `dist/wc-maya-gateway-<version>.zip` from `git archive`, containing only
+the runtime files: `src/`, `assets/`, `templates/`, `languages/`, the main plugin
+file, README, LICENSE, CHANGELOG. Tests, docs and tooling are excluded via the
+`export-ignore` rules in `.gitattributes`.
+
+There is **no `vendor/` in the zip** — the plugin has no runtime dependencies and
+autoloads its own `src/`. The build refuses to run if that ever stops being true.
 
 ## License
 
-GPL-3.0-only
+GPL-3.0-or-later

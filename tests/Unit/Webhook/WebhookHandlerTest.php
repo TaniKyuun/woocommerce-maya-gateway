@@ -3,18 +3,18 @@
 /**
  * Unit tests for the WebhookHandler::process() pipeline.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook
+ * @package RogueDex\MayaGateway\Tests\Unit\Webhook
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook;
+namespace RogueDex\MayaGateway\Tests\Unit\Webhook;
 
 use Mockery;
-use RogueTechPhilippines\MayaGateway\Util\Logger;
-use RogueTechPhilippines\MayaGateway\Webhook\EventDispatcher;
-use RogueTechPhilippines\MayaGateway\Webhook\SignatureVerifier;
-use RogueTechPhilippines\MayaGateway\Webhook\WebhookHandler;
+use RogueDex\MayaGateway\Util\Logger;
+use RogueDex\MayaGateway\Webhook\EventDispatcher;
+use RogueDex\MayaGateway\Webhook\SignatureVerifier;
+use RogueDex\MayaGateway\Webhook\WebhookHandler;
 
 function wc_maya_fresh_timestamp(): string
 {
@@ -206,7 +206,7 @@ test('former simulator header still requires a valid signature', function (): vo
     $result = WebhookHandler::process(
         $body,
         [
-            'x-simulated-webhook'             => 'true',
+            'x-simulated-webhook'            => 'true',
             WebhookHandler::HEADER_TIMESTAMP => wc_maya_fresh_timestamp(),
             WebhookHandler::HEADER_SIGNATURE => 'nonce=n,v1=ab',
         ],

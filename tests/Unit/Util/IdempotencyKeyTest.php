@@ -3,15 +3,15 @@
 /**
  * Unit tests for IdempotencyKey.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Util
+ * @package RogueDex\MayaGateway\Tests\Unit\Util
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Util;
+namespace RogueDex\MayaGateway\Tests\Unit\Util;
 
 use Brain\Monkey\Functions;
-use RogueTechPhilippines\MayaGateway\Util\IdempotencyKey;
+use RogueDex\MayaGateway\Util\IdempotencyKey;
 
 beforeEach(function (): void {
     Functions\when('wp_generate_uuid4')->justReturn('00000000-1111-2222-3333-444444444444');

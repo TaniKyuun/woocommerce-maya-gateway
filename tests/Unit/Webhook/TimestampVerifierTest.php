@@ -3,14 +3,14 @@
 /**
  * Unit tests for TimestampVerifier.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook
+ * @package RogueDex\MayaGateway\Tests\Unit\Webhook
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook;
+namespace RogueDex\MayaGateway\Tests\Unit\Webhook;
 
-use RogueTechPhilippines\MayaGateway\Webhook\TimestampVerifier;
+use RogueDex\MayaGateway\Webhook\TimestampVerifier;
 
 test('accepts a timestamp inside the ±300s window', function (): void {
     $now    = 1_700_000_000_000;

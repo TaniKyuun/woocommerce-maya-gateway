@@ -22,20 +22,31 @@
  *
  *     php bin/make-pot.php
  *
- * The output is committed; CI fails if it drifts vs. the source.
+ * The output is committed. Re-run this after changing any translatable string,
+ * and before cutting a release so the POT carries the new version.
  */
 
 declare(strict_types=1);
 
 const TEXT_DOMAIN = 'wc-maya-gateway';
 const PLUGIN_NAME = 'WooCommerce Maya Gateway';
-const PLUGIN_VER  = '1.0.0';
 
-$root = dirname(__DIR__);
+$root       = dirname(__DIR__);
+$pluginFile = $root . '/wc-maya-payment-gateway.php';
+
+// Read the version from the plugin header — the single source of truth — so a
+// release bump can't leave the POT claiming a stale version.
+if (! preg_match('/^[ \t\/*#@]*Version:\s*(.+)$/mi', (string) file_get_contents($pluginFile), $m)) {
+    fwrite(STDERR, "Could not read the Version: header from {$pluginFile}.\n");
+    exit(1);
+}
+
+define('PLUGIN_VER', trim($m[1]));
+
 $dirs = [
     $root . '/src',
     $root . '/templates',
-    $root . '/wc-maya-payment-gateway.php',
+    $pluginFile,
 ];
 
 $strings = []; // msgid => ['references' => [...], 'plural' => ?, 'context' => ?]
@@ -190,11 +201,11 @@ function build_pot_header(): string
 
     $lines = [
         "# Copyright (C) {$plugin}",
-        '# This file is distributed under the GPL-3.0 license.',
+        '# This file is distributed under the GPL-3.0-or-later license.',
         'msgid ""',
         'msgstr ""',
         '"Project-Id-Version: ' . $plugin . ' ' . $ver . '\n"',
-        '"Report-Msgid-Bugs-To: https://github.com/RogueTech-Philippines/woocommerce-maya-gateway/issues\n"',
+        '"Report-Msgid-Bugs-To: https://github.com/roguedex-labs/woocommerce-maya-gateway/issues\n"',
         '"POT-Creation-Date: ' . $today . '\n"',
         '"MIME-Version: 1.0\n"',
         '"Content-Type: text/plain; charset=UTF-8\n"',

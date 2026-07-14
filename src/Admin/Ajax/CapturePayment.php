@@ -3,19 +3,19 @@
 /**
  * AJAX handler for the "Capture" order-actions button.
  *
- * @package RogueTechPhilippines\MayaGateway\Admin\Ajax
+ * @package RogueDex\MayaGateway\Admin\Ajax
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Admin\Ajax;
+namespace RogueDex\MayaGateway\Admin\Ajax;
 
-use RogueTechPhilippines\MayaGateway\Admin\AdminAssets;
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Payments;
-use RogueTechPhilippines\MayaGateway\Gateway\CaptureProcessor;
-use RogueTechPhilippines\MayaGateway\Gateway\MayaGateway;
-use RogueTechPhilippines\MayaGateway\Settings\SettingsHelper;
-use RogueTechPhilippines\MayaGateway\Util\Logger;
+use RogueDex\MayaGateway\Admin\AdminAssets;
+use RogueDex\MayaGateway\Api\Endpoints\Payments;
+use RogueDex\MayaGateway\Gateway\CaptureProcessor;
+use RogueDex\MayaGateway\Gateway\MayaGateway;
+use RogueDex\MayaGateway\Settings\SettingsHelper;
+use RogueDex\MayaGateway\Util\Logger;
 use WC_Order;
 use WP_Error;
 

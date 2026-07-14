@@ -3,16 +3,16 @@
 /**
  * WooCommerce Blocks (Cart & Checkout) payment-method integration.
  *
- * @package RogueTechPhilippines\MayaGateway\Blocks
+ * @package RogueDex\MayaGateway\Blocks
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Blocks;
+namespace RogueDex\MayaGateway\Blocks;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
-use RogueTechPhilippines\MayaGateway\Gateway\MayaGateway;
+use RogueDex\MayaGateway\Gateway\MayaGateway;
 
 /**
  * Exposes Maya Checkout to the block-based Cart and Checkout.
@@ -203,8 +203,19 @@ final class MayaBlocksPaymentMethod extends AbstractPaymentMethodType
         return (string) apply_filters('wc_maya_blocks_icon_url', '');
     }
 
+    /**
+     * Cache-busting version for the block assets.
+     *
+     * `WC_MAYA_VERSION` is defined by the main plugin file, and by
+     * tests/bootstrap.php for the unit tests — the guard is belt-and-braces for
+     * anything that loads this class through the autoloader alone.
+     */
     private static function asset_version(): string
     {
-        return (defined('WP_DEBUG') && WP_DEBUG) ? (string) time() : '1.0.0';
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            return (string) time();
+        }
+
+        return defined('WC_MAYA_VERSION') ? (string) WC_MAYA_VERSION : '0.0.0';
     }
 }

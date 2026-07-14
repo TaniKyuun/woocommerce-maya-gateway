@@ -3,12 +3,12 @@
 /**
  * Unit tests for uninstall cleanup.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit
+ * @package RogueDex\MayaGateway\Tests\Unit
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit;
+namespace RogueDex\MayaGateway\Tests\Unit;
 
 use Brain\Monkey\Functions;
 

@@ -3,17 +3,17 @@
 /**
  * Unit tests for the Checkouts endpoint wrapper.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Api\Endpoints
+ * @package RogueDex\MayaGateway\Tests\Unit\Api\Endpoints
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Api\Endpoints;
+namespace RogueDex\MayaGateway\Tests\Unit\Api\Endpoints;
 
 use Mockery;
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Checkouts;
-use RogueTechPhilippines\MayaGateway\Api\MayaApiClient;
-use RogueTechPhilippines\MayaGateway\Value\CheckoutSession;
+use RogueDex\MayaGateway\Api\Endpoints\Checkouts;
+use RogueDex\MayaGateway\Api\MayaApiClient;
+use RogueDex\MayaGateway\Value\CheckoutSession;
 use WP_Error;
 
 test('create POSTs to /checkout/v1/checkouts with the public key', function (): void {

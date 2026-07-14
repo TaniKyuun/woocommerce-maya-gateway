@@ -3,15 +3,15 @@
 /**
  * "Capture" button beside the Refund button in the order-edit screen.
  *
- * @package RogueTechPhilippines\MayaGateway\Admin\OrderActions
+ * @package RogueDex\MayaGateway\Admin\OrderActions
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Admin\OrderActions;
+namespace RogueDex\MayaGateway\Admin\OrderActions;
 
-use RogueTechPhilippines\MayaGateway\Gateway\MayaGateway;
-use RogueTechPhilippines\MayaGateway\Value\AuthorizationType;
+use RogueDex\MayaGateway\Gateway\MayaGateway;
+use RogueDex\MayaGateway\Value\AuthorizationType;
 use WC_Order;
 
 /**

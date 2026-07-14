@@ -458,12 +458,17 @@ shipped or user-installed `.mo` is picked up automatically.
 
 ### Release build
 
-`bin/build-release.sh` rsyncs the runtime files into
-`dist/woocommerce-maya-gateway/`, runs `composer install --no-dev
---optimize-autoloader --classmap-authoritative` inside the staging
-copy, strips vendor-side test / doc directories, and zips up the
-result as `dist/wc-maya-gateway-<version>.zip`. The plugin's working
-tree is never touched — composer.lock stays at the dev resolve.
+A release is a **git tag** — Composer resolves it straight from GitHub and there
+is no artifact to publish. See [releasing.md](releasing.md).
+
+`bin/build-release.sh` produces the optional
+`dist/wc-maya-gateway-<version>.zip` for sites that install by hand rather than
+through Composer. It stages the tree with `git archive` (tracked files only,
+honouring the `export-ignore` rules in `.gitattributes`) and zips it. There is no
+Composer step: the plugin has no runtime dependencies, so there is nothing to
+install and no autoloader to generate — the main plugin file registers its own
+PSR-4 map over `src/` when nothing else already has. The build fails if
+`composer.json`'s `require` ever grows beyond `php`.
 
 ## Adding an endpoint
 

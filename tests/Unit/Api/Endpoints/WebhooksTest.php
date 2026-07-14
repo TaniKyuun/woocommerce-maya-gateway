@@ -3,17 +3,17 @@
 /**
  * Unit tests for the Webhooks endpoint wrapper.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Api\Endpoints
+ * @package RogueDex\MayaGateway\Tests\Unit\Api\Endpoints
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Api\Endpoints;
+namespace RogueDex\MayaGateway\Tests\Unit\Api\Endpoints;
 
 use Mockery;
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Webhooks;
-use RogueTechPhilippines\MayaGateway\Api\MayaApiClient;
-use RogueTechPhilippines\MayaGateway\Value\WebhookRecord;
+use RogueDex\MayaGateway\Api\Endpoints\Webhooks;
+use RogueDex\MayaGateway\Api\MayaApiClient;
+use RogueDex\MayaGateway\Value\WebhookRecord;
 use WP_Error;
 
 test('all GETs /checkout/v1/webhooks with the secret key and decodes records', function (): void {

@@ -8,16 +8,16 @@
  * Brain-Monkey-stubbed so the test suite never touches an actual
  * scheduler.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook
+ * @package RogueDex\MayaGateway\Tests\Unit\Webhook
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook;
+namespace RogueDex\MayaGateway\Tests\Unit\Webhook;
 
 use Brain\Monkey\Functions;
-use RogueTechPhilippines\MayaGateway\Util\Logger;
-use RogueTechPhilippines\MayaGateway\Webhook\RetryQueue;
+use RogueDex\MayaGateway\Util\Logger;
+use RogueDex\MayaGateway\Webhook\RetryQueue;
 
 beforeEach(function (): void {
     Functions\when('__')->alias(static fn(string $text, string $domain = ''): string => $text);

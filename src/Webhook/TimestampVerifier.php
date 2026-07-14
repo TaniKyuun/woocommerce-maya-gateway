@@ -3,12 +3,12 @@
 /**
  * Webhook timestamp freshness check.
  *
- * @package RogueTechPhilippines\MayaGateway\Webhook
+ * @package RogueDex\MayaGateway\Webhook
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Webhook;
+namespace RogueDex\MayaGateway\Webhook;
 
 /**
  * Rejects webhooks whose `X-Maya-Webhook-Timestamp` is too old or too far in

@@ -3,17 +3,17 @@
 /**
  * Validates + executes a Maya capture against an authorized payment.
  *
- * @package RogueTechPhilippines\MayaGateway\Gateway
+ * @package RogueDex\MayaGateway\Gateway
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Gateway;
+namespace RogueDex\MayaGateway\Gateway;
 
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Payments;
-use RogueTechPhilippines\MayaGateway\Util\IdempotencyKey;
-use RogueTechPhilippines\MayaGateway\Util\Logger;
-use RogueTechPhilippines\MayaGateway\Value\PaymentRecord;
+use RogueDex\MayaGateway\Api\Endpoints\Payments;
+use RogueDex\MayaGateway\Util\IdempotencyKey;
+use RogueDex\MayaGateway\Util\Logger;
+use RogueDex\MayaGateway\Value\PaymentRecord;
 use WC_Order;
 use WP_Error;
 

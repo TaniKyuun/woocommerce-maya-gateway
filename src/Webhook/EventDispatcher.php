@@ -3,20 +3,20 @@
 /**
  * Translates a verified webhook event into a WC order state change.
  *
- * @package RogueTechPhilippines\MayaGateway\Webhook
+ * @package RogueDex\MayaGateway\Webhook
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Webhook;
+namespace RogueDex\MayaGateway\Webhook;
 
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Payments;
-use RogueTechPhilippines\MayaGateway\Gateway\MayaGateway;
-use RogueTechPhilippines\MayaGateway\Util\IdempotencyKey;
-use RogueTechPhilippines\MayaGateway\Util\Logger;
-use RogueTechPhilippines\MayaGateway\Value\AuthorizationType;
-use RogueTechPhilippines\MayaGateway\Value\PaymentRecord;
-use RogueTechPhilippines\MayaGateway\Value\WebhookEvent;
+use RogueDex\MayaGateway\Api\Endpoints\Payments;
+use RogueDex\MayaGateway\Gateway\MayaGateway;
+use RogueDex\MayaGateway\Util\IdempotencyKey;
+use RogueDex\MayaGateway\Util\Logger;
+use RogueDex\MayaGateway\Value\AuthorizationType;
+use RogueDex\MayaGateway\Value\PaymentRecord;
+use RogueDex\MayaGateway\Value\WebhookEvent;
 use WC_Order;
 use WP_Error;
 

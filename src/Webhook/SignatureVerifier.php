@@ -3,12 +3,12 @@
 /**
  * RSA-SHA256 verification of Maya webhook signatures.
  *
- * @package RogueTechPhilippines\MayaGateway\Webhook
+ * @package RogueDex\MayaGateway\Webhook
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Webhook;
+namespace RogueDex\MayaGateway\Webhook;
 
 /**
  * Verifies the `X-Maya-Webhook-Signature` header against a flattened payload.

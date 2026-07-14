@@ -9,3 +9,20 @@
 *.css text eol=lf
 *.js text eol=lf
 *.sh text eol=lf
+
+# Keep dev files out of the Composer dist. Bedrock installs this plugin from a
+# tagged GitHub zipball (`preferred-install: dist`), and GitHub's archive honors
+# export-ignore — so what is listed here never lands in web/app/plugins/.
+# bin/build-release.sh applies the equivalent excludes to the standalone zip.
+/tests            export-ignore
+/docs             export-ignore
+/bin              export-ignore
+/.github          export-ignore
+/.claude          export-ignore
+/.phpunit.cache   export-ignore
+/phpcs.xml        export-ignore
+/phpunit.xml      export-ignore
+/.php-cs-fixer.php export-ignore
+/composer.lock    export-ignore
+/.gitignore       export-ignore
+/.gitattributes   export-ignore

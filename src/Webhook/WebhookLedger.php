@@ -3,15 +3,15 @@
 /**
  * Per-order webhook event ledger.
  *
- * @package RogueTechPhilippines\MayaGateway\Webhook
+ * @package RogueDex\MayaGateway\Webhook
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Webhook;
+namespace RogueDex\MayaGateway\Webhook;
 
-use RogueTechPhilippines\MayaGateway\Gateway\MayaGateway;
-use RogueTechPhilippines\MayaGateway\Value\WebhookEvent;
+use RogueDex\MayaGateway\Gateway\MayaGateway;
+use RogueDex\MayaGateway\Value\WebhookEvent;
 use WC_Order;
 
 /**
@@ -109,8 +109,8 @@ final class WebhookLedger
             'key'         => self::entry_key($event, $payload),
             'event'       => $event->value,
             'action'      => $action,
-            'payment_id'  => isset($payload['id']) && is_string($payload['id']) ? $payload['id'] : null,
-            'amount'      => isset($payload['amount']) && is_numeric($payload['amount']) ? (float) $payload['amount'] : null,
+            'payment_id'  => isset($payload['id'])       && is_string($payload['id']) ? $payload['id'] : null,
+            'amount'      => isset($payload['amount'])   && is_numeric($payload['amount']) ? (float) $payload['amount'] : null,
             'currency'    => isset($payload['currency']) && is_string($payload['currency']) ? strtoupper($payload['currency']) : null,
             'received_at' => gmdate('c'),
         ];

@@ -3,14 +3,14 @@
 /**
  * Unit tests for the WebhookEvent enum.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Value
+ * @package RogueDex\MayaGateway\Tests\Unit\Value
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Value;
+namespace RogueDex\MayaGateway\Tests\Unit\Value;
 
-use RogueTechPhilippines\MayaGateway\Value\WebhookEvent;
+use RogueDex\MayaGateway\Value\WebhookEvent;
 
 test('try_from_string resolves Maya event names', function (): void {
     expect(WebhookEvent::try_from_string('PAYMENT_SUCCESS'))->toBe(WebhookEvent::PaymentSuccess)

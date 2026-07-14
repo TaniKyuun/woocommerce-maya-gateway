@@ -3,20 +3,20 @@
 /**
  * Unit tests for the CaptureProcessor.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Gateway
+ * @package RogueDex\MayaGateway\Tests\Unit\Gateway
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Gateway;
+namespace RogueDex\MayaGateway\Tests\Unit\Gateway;
 
 use Brain\Monkey\Functions;
 use Mockery;
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Payments;
-use RogueTechPhilippines\MayaGateway\Gateway\CaptureProcessor;
-use RogueTechPhilippines\MayaGateway\Util\Logger;
-use RogueTechPhilippines\MayaGateway\Value\Money;
-use RogueTechPhilippines\MayaGateway\Value\PaymentRecord;
+use RogueDex\MayaGateway\Api\Endpoints\Payments;
+use RogueDex\MayaGateway\Gateway\CaptureProcessor;
+use RogueDex\MayaGateway\Util\Logger;
+use RogueDex\MayaGateway\Value\Money;
+use RogueDex\MayaGateway\Value\PaymentRecord;
 use WC_Order;
 use WP_Error;
 

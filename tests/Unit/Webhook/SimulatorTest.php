@@ -3,17 +3,17 @@
 /**
  * Unit tests for the local-dev webhook Simulator.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook
+ * @package RogueDex\MayaGateway\Tests\Unit\Webhook
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook;
+namespace RogueDex\MayaGateway\Tests\Unit\Webhook;
 
 use Brain\Monkey\Functions;
 use Mockery;
-use RogueTechPhilippines\MayaGateway\Settings\SettingsHelper;
-use RogueTechPhilippines\MayaGateway\Webhook\Simulator;
+use RogueDex\MayaGateway\Settings\SettingsHelper;
+use RogueDex\MayaGateway\Webhook\Simulator;
 use WC_Order;
 use WC_Payment_Gateway;
 use WP_Error;
@@ -26,11 +26,11 @@ function wc_maya_fake_order(int $id = 42, float $total = 100.5, string $currency
     $order->shouldReceive('get_currency')->andReturn($currency);
     // WebhookLedger reads/writes this meta on terminal dispatch outcomes.
     $order->shouldReceive('get_meta')
-        ->with(\RogueTechPhilippines\MayaGateway\Gateway\MayaGateway::META_WEBHOOK_LOG)
+        ->with(\RogueDex\MayaGateway\Gateway\MayaGateway::META_WEBHOOK_LOG)
         ->andReturn('')
         ->byDefault();
     $order->shouldReceive('get_meta')
-        ->with(\RogueTechPhilippines\MayaGateway\Gateway\MayaGateway::META_AUTHORIZATION_TYPE)
+        ->with(\RogueDex\MayaGateway\Gateway\MayaGateway::META_AUTHORIZATION_TYPE)
         ->andReturn('none')
         ->byDefault();
     $order->shouldReceive('update_meta_data')->andReturnSelf()->byDefault();

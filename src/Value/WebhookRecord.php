@@ -3,12 +3,12 @@
 /**
  * Webhook-registration value object.
  *
- * @package RogueTechPhilippines\MayaGateway\Value
+ * @package RogueDex\MayaGateway\Value
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Value;
+namespace RogueDex\MayaGateway\Value;
 
 /**
  * Parsed item from GET/POST `/checkout/v1/webhooks`.

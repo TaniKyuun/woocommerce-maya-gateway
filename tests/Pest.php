@@ -3,7 +3,7 @@
 /**
  * Pest 4 global configuration.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests
+ * @package RogueDex\MayaGateway\Tests
  */
 
 declare(strict_types=1);

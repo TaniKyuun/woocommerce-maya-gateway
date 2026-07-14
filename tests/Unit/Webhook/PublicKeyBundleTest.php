@@ -3,15 +3,15 @@
 /**
  * Unit tests for PublicKeyBundle.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook
+ * @package RogueDex\MayaGateway\Tests\Unit\Webhook
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook;
+namespace RogueDex\MayaGateway\Tests\Unit\Webhook;
 
 use Brain\Monkey\Filters;
-use RogueTechPhilippines\MayaGateway\Webhook\PublicKeyBundle;
+use RogueDex\MayaGateway\Webhook\PublicKeyBundle;
 
 test('exposes two PEMs per environment', function (): void {
     expect(PublicKeyBundle::SANDBOX_PEMS)->toHaveCount(2);

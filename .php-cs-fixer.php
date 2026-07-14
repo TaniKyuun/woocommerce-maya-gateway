@@ -18,6 +18,7 @@ return $config
             ->in(__DIR__)
             ->exclude([
                 'vendor',
+                'dist',
                 '.phpunit.cache',
                 'node_modules',
             ]),

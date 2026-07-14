@@ -3,18 +3,18 @@
 /**
  * Admin asset loader.
  *
- * @package RogueTechPhilippines\MayaGateway\Admin
+ * @package RogueDex\MayaGateway\Admin
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Admin;
+namespace RogueDex\MayaGateway\Admin;
 
-use RogueTechPhilippines\MayaGateway\Admin\Ajax\CapturePayment;
-use RogueTechPhilippines\MayaGateway\Admin\Ajax\RefreshWebhooks;
-use RogueTechPhilippines\MayaGateway\Admin\Ajax\SimulateWebhook;
-use RogueTechPhilippines\MayaGateway\Admin\Ajax\TestConnection;
-use RogueTechPhilippines\MayaGateway\Gateway\MayaGateway;
+use RogueDex\MayaGateway\Admin\Ajax\CapturePayment;
+use RogueDex\MayaGateway\Admin\Ajax\RefreshWebhooks;
+use RogueDex\MayaGateway\Admin\Ajax\SimulateWebhook;
+use RogueDex\MayaGateway\Admin\Ajax\TestConnection;
+use RogueDex\MayaGateway\Gateway\MayaGateway;
 
 /**
  * Enqueues the JS/CSS used by the gateway settings screen and ships the
@@ -39,7 +39,7 @@ class AdminAssets
         }
 
         $base = plugins_url('', WC_MAYA_PLUGIN_FILE);
-        $ver  = (string) (defined('WP_DEBUG') && WP_DEBUG ? time() : '1.0.0');
+        $ver  = self::asset_version();
 
         wp_enqueue_style('wc-maya-admin', $base . '/assets/css/maya-admin.css', [], $ver);
         wp_enqueue_script('wc-maya-admin', $base . '/assets/js/maya-admin.js', [ 'jquery' ], $ver, true);
@@ -79,6 +79,22 @@ class AdminAssets
                 ],
             ],
         );
+    }
+
+    /**
+     * Cache-busting version for the admin assets.
+     *
+     * `WC_MAYA_VERSION` is defined by the main plugin file, and by
+     * tests/bootstrap.php for the unit tests — the guard is belt-and-braces for
+     * anything that loads this class through the autoloader alone.
+     */
+    private static function asset_version(): string
+    {
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            return (string) time();
+        }
+
+        return defined('WC_MAYA_VERSION') ? (string) WC_MAYA_VERSION : '0.0.0';
     }
 
     private static function is_maya_settings_screen(string $hook): bool

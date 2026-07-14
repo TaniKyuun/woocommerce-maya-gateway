@@ -2,7 +2,7 @@
 /**
  * Payment description rendered at WooCommerce checkout.
  *
- * @package RogueTechPhilippines\MayaGateway
+ * @package RogueDex\MayaGateway
  *
  * @var string $description Payment method description, escaped on output.
  */

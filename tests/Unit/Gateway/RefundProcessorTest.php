@@ -11,22 +11,22 @@
  * Plus exhaustive coverage of the pure-static planner and the
  * remaining_refundable reducer.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Gateway
+ * @package RogueDex\MayaGateway\Tests\Unit\Gateway
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Gateway;
+namespace RogueDex\MayaGateway\Tests\Unit\Gateway;
 
 use Brain\Monkey\Functions;
 use Mockery;
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Payments;
-use RogueTechPhilippines\MayaGateway\Gateway\MayaGateway;
-use RogueTechPhilippines\MayaGateway\Gateway\RefundProcessor;
-use RogueTechPhilippines\MayaGateway\Util\Logger;
-use RogueTechPhilippines\MayaGateway\Value\Money;
-use RogueTechPhilippines\MayaGateway\Value\PaymentRecord;
-use RogueTechPhilippines\MayaGateway\Value\RefundRecord;
+use RogueDex\MayaGateway\Api\Endpoints\Payments;
+use RogueDex\MayaGateway\Gateway\MayaGateway;
+use RogueDex\MayaGateway\Gateway\RefundProcessor;
+use RogueDex\MayaGateway\Util\Logger;
+use RogueDex\MayaGateway\Value\Money;
+use RogueDex\MayaGateway\Value\PaymentRecord;
+use RogueDex\MayaGateway\Value\RefundRecord;
 use WC_Order;
 use WP_Error;
 

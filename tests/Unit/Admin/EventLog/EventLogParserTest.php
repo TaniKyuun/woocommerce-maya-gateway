@@ -3,14 +3,14 @@
 /**
  * Unit tests for the WC log-line parser used by the admin event-log viewer.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Admin\EventLog
+ * @package RogueDex\MayaGateway\Tests\Unit\Admin\EventLog
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Admin\EventLog;
+namespace RogueDex\MayaGateway\Tests\Unit\Admin\EventLog;
 
-use RogueTechPhilippines\MayaGateway\Admin\EventLog\EventLogParser;
+use RogueDex\MayaGateway\Admin\EventLog\EventLogParser;
 
 test('parse_line splits timestamp, level, message, and JSON context for a real WC line', function (): void {
     $line   = '2026-05-26T03:51:06+00:00 DEBUG -> POST /checkout/v1/checkouts {"auth_key":"public","body":{"totalAmount":{"value":100}}}';

@@ -3,14 +3,14 @@
 /**
  * Maya API client.
  *
- * @package RogueTechPhilippines\MayaGateway\Api
+ * @package RogueDex\MayaGateway\Api
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Api;
+namespace RogueDex\MayaGateway\Api;
 
-use RogueTechPhilippines\MayaGateway\Util\Logger;
+use RogueDex\MayaGateway\Util\Logger;
 use WP_Error;
 
 /**

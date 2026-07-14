@@ -3,14 +3,14 @@
 /**
  * Unit tests for RefundRecord.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Value
+ * @package RogueDex\MayaGateway\Tests\Unit\Value
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Value;
+namespace RogueDex\MayaGateway\Tests\Unit\Value;
 
-use RogueTechPhilippines\MayaGateway\Value\RefundRecord;
+use RogueDex\MayaGateway\Value\RefundRecord;
 
 test('from_array maps Maya fields onto typed properties', function (): void {
     $record = RefundRecord::from_array([

@@ -3,22 +3,22 @@
 /**
  * Maya Checkout webhook-management endpoint wrapper.
  *
- * @package RogueTechPhilippines\MayaGateway\Api\Endpoints
+ * @package RogueDex\MayaGateway\Api\Endpoints
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Api\Endpoints;
+namespace RogueDex\MayaGateway\Api\Endpoints;
 
-use RogueTechPhilippines\MayaGateway\Api\MayaApiClient;
-use RogueTechPhilippines\MayaGateway\Value\WebhookRecord;
+use RogueDex\MayaGateway\Api\MayaApiClient;
+use RogueDex\MayaGateway\Value\WebhookRecord;
 use WP_Error;
 
 /**
  * Typed wrapper around `/checkout/v1/webhooks`.
  *
  * Authenticated with the Maya Checkout *secret* key. List/create/delete
- * surface — the {@see \RogueTechPhilippines\MayaGateway\Webhook\Registrar} composes
+ * surface — the {@see \RogueDex\MayaGateway\Webhook\Registrar} composes
  * these into the idempotent "reconcile our managed set" operation that
  * runs on settings save.
  *

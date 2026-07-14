@@ -3,23 +3,23 @@
 /**
  * Unit tests for the EventDispatcher.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook
+ * @package RogueDex\MayaGateway\Tests\Unit\Webhook
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook;
+namespace RogueDex\MayaGateway\Tests\Unit\Webhook;
 
 use Brain\Monkey\Functions;
 use Mockery;
-use RogueTechPhilippines\MayaGateway\Api\Endpoints\Payments;
-use RogueTechPhilippines\MayaGateway\Gateway\MayaGateway;
-use RogueTechPhilippines\MayaGateway\Util\Logger;
-use RogueTechPhilippines\MayaGateway\Value\Money;
-use RogueTechPhilippines\MayaGateway\Value\PaymentRecord;
-use RogueTechPhilippines\MayaGateway\Value\WebhookEvent;
-use RogueTechPhilippines\MayaGateway\Webhook\EventDispatcher;
-use RogueTechPhilippines\MayaGateway\Webhook\WebhookLedger;
+use RogueDex\MayaGateway\Api\Endpoints\Payments;
+use RogueDex\MayaGateway\Gateway\MayaGateway;
+use RogueDex\MayaGateway\Util\Logger;
+use RogueDex\MayaGateway\Value\Money;
+use RogueDex\MayaGateway\Value\PaymentRecord;
+use RogueDex\MayaGateway\Value\WebhookEvent;
+use RogueDex\MayaGateway\Webhook\EventDispatcher;
+use RogueDex\MayaGateway\Webhook\WebhookLedger;
 use WC_Order;
 use WP_Error;
 

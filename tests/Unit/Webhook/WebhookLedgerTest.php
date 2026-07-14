@@ -3,15 +3,15 @@
 /**
  * Unit tests for the WebhookLedger pure helpers.
  *
- * @package RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook
+ * @package RogueDex\MayaGateway\Tests\Unit\Webhook
  */
 
 declare(strict_types=1);
 
-namespace RogueTechPhilippines\MayaGateway\Tests\Unit\Webhook;
+namespace RogueDex\MayaGateway\Tests\Unit\Webhook;
 
-use RogueTechPhilippines\MayaGateway\Value\WebhookEvent;
-use RogueTechPhilippines\MayaGateway\Webhook\WebhookLedger;
+use RogueDex\MayaGateway\Value\WebhookEvent;
+use RogueDex\MayaGateway\Webhook\WebhookLedger;
 
 test('entry_key prefers the Maya payment id', function (): void {
     $key = WebhookLedger::entry_key(
