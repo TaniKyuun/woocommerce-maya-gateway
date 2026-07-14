@@ -1,7 +1,7 @@
 === WooCommerce Maya Gateway ===
 Contributors: roguedex
 Tags: woocommerce, payment gateway, maya, paymaya, philippines
-Requires at least: 6.9
+Requires at least: 7.0
 Tested up to: 7.0
 Requires PHP: 8.3
 WC requires at least: 10.6
@@ -78,6 +78,8 @@ narrowed below the 5-minute default).
   required a bundled autoloader that a Composer install does not have.
 * Fixed: admin and block assets were cache-busted with a hardcoded version, so
   browsers served stale CSS/JS after an upgrade.
+* Changed: the plugin no longer ships a `vendor/` directory. It has no runtime
+  dependencies, so it autoloads its own classes directly.
 * Changed: the project moved to the RogueDex org. The Composer package is now
   `roguedex-labs/woocommerce-maya-gateway` and the PHP namespace is
   `RogueDex\MayaGateway`. Settings, orders and the registered webhook are
