@@ -97,13 +97,17 @@ class PublicKeyBundle
             return $bundled;
         }
 
+
         $keys = array_values(array_filter(
-            array_map(static fn($k): string => is_string($k) ? $k : '', $keys),
-            static fn(string $k): bool => '' !== trim($k),
+            array_map(static fn($key): string => is_string($key) ? trim($key) : '', $keys),
+            static function (string $key): bool {
+                $public_key = openssl_pkey_get_public($key);
+                $details = false !== $public_key ? openssl_pkey_get_details($public_key) : false;
+
+                return is_array($details) && OPENSSL_KEYTYPE_RSA === ($details['type'] ?? null);
+            },
         ));
 
-        // Never leave verification with an empty key set — fall back to bundled
-        // so a mis-typed filter can't disable signature checks entirely.
         return [] === $keys ? $bundled : $keys;
     }
 }

@@ -22,12 +22,12 @@ beforeEach(function (): void {
     Functions\when('__')->alias(static fn(string $text, string $domain = ''): string => $text);
 });
 
-function wc_maya_existing_record(string $id, string $name): WebhookRecord
+function wc_maya_existing_record(string $id, string $name, string $callback_url = 'https://old.example.test/cb'): WebhookRecord
 {
     return WebhookRecord::from_array([
         'id'          => $id,
         'name'        => $name,
-        'callbackUrl' => 'https://old.example.test/cb',
+        'callbackUrl' => $callback_url,
         'createdAt'   => '2026-01-01T00:00:00Z',
         'updatedAt'   => '2026-01-01T00:00:00Z',
     ]);
@@ -68,18 +68,18 @@ test('reconcile bubbles list errors as WP_Error', function (): void {
     expect($result->get_error_code())->toBe('wc_maya_http_401');
 });
 
-test('reconcile deletes managed AND deprecated webhooks, skips unrelated, recreates only managed', function (): void {
+test('reconcile deletes managed and owned deprecated webhooks, skips others, recreates managed', function (): void {
     $endpoint = Mockery::mock(Webhooks::class);
 
     $endpoint->expects('all')->andReturn([
-        wc_maya_existing_record('wh-1', 'PAYMENT_SUCCESS'),      // managed → delete
-        wc_maya_existing_record('wh-2', 'PAYMENT_FAILED'),       // managed → delete
-        wc_maya_existing_record('wh-3', 'CHECKOUT_FAILURE'),     // deprecated → delete (cleanup)
-        wc_maya_existing_record('wh-4', 'CHECKOUT_DROPOUT'),     // deprecated → delete (cleanup)
-        wc_maya_existing_record('wh-5', 'merchant_custom_hook'), // unrelated → skip
+        wc_maya_existing_record('wh-1', 'PAYMENT_SUCCESS'),
+        wc_maya_existing_record('wh-2', 'PAYMENT_FAILED'),
+        wc_maya_existing_record('wh-3', 'CHECKOUT_FAILURE', 'https://new.example.test/cb'),
+        wc_maya_existing_record('wh-4', 'CHECKOUT_DROPOUT', 'https://new.example.test/cb'),
+        wc_maya_existing_record('wh-5', 'CHECKOUT_SUCCESS', 'https://merchant.example.test/cb'),
+        wc_maya_existing_record('wh-6', 'merchant_custom_hook'),
     ]);
 
-    // Managed + deprecated deletes succeed; the merchant's own hook is left alone.
     $endpoint->expects('delete')->with('wh-1')->andReturn(wc_maya_existing_record('wh-1', 'PAYMENT_SUCCESS'));
     $endpoint->expects('delete')->with('wh-2')->andReturn(wc_maya_existing_record('wh-2', 'PAYMENT_FAILED'));
     $endpoint->expects('delete')->with('wh-3')->andReturn(wc_maya_existing_record('wh-3', 'CHECKOUT_FAILURE'));
@@ -99,7 +99,7 @@ test('reconcile deletes managed AND deprecated webhooks, skips unrelated, recrea
 
     expect($result)->not->toBeInstanceOf(WP_Error::class);
     expect($result['deleted'])->toEqualCanonicalizing([ 'PAYMENT_SUCCESS', 'PAYMENT_FAILED', 'CHECKOUT_FAILURE', 'CHECKOUT_DROPOUT' ]);
-    expect($result['skipped'])->toEqualCanonicalizing([ 'merchant_custom_hook' ]);
+    expect($result['skipped'])->toEqualCanonicalizing([ 'CHECKOUT_SUCCESS', 'merchant_custom_hook' ]);
     expect($result['errors'])->toBe([]);
     expect($result['created'])->toHaveCount(4);
 });

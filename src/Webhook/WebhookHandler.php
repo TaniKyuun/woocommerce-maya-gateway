@@ -176,9 +176,9 @@ class WebhookHandler
             }
         }
 
-        $event_name = self::extract_event_name($payload);
+        $event      = WebhookEvent::from_payload($payload);
         $reference  = self::extract_reference($payload);
-        $event      = WebhookEvent::try_from_string($event_name);
+        $event_name = null !== $event ? $event->value : '';
 
         $logger->info(
             sprintf(
@@ -225,15 +225,6 @@ class WebhookHandler
     /**
      * @param array<string,mixed> $payload
      */
-    private static function extract_event_name(array $payload): string
-    {
-        foreach ([ 'status', 'paymentStatus', 'name' ] as $key) {
-            if (isset($payload[ $key ]) && is_string($payload[ $key ])) {
-                return $payload[ $key ];
-            }
-        }
-        return '';
-    }
 
     /**
      * @param array<string,mixed> $payload

@@ -5,7 +5,8 @@
 **A release is a git tag. That's it.**
 
 ```bash
-git tag -a v1.2.0 -m "v1.2.0"
+git fetch origin
+git tag -a v1.2.0 origin/main -m "v1.2.0"
 git push origin v1.2.0
 ```
 
@@ -106,13 +107,20 @@ which branch they sit on, so tagging a branch that never merges "works" — and 
 permanently behind what's released. Don't.
 
 ```bash
-git checkout main && git pull
-git tag -a v1.2.0 -m "v1.2.0"
+git fetch origin
+git tag -a v1.2.0 origin/main -m "v1.2.0"
 git push origin v1.2.0
 ```
 
-`release/1.x` is the long-lived release line. Patches for the 1.x series cherry-pick onto it and
-tag from there.
+`release/1.x` is the long-lived release line. For 1.x patches:
+
+```bash
+git fetch origin
+git tag -a v1.2.0 origin/release/1.x -m "v1.2.0"
+git push origin v1.2.0
+```
+
+Never move a published tag.
 
 ### 5. Roll it out to the site
 

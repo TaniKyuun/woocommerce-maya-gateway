@@ -71,3 +71,15 @@ test('an empty allowlist from the filter disables the IP check (fail open)', fun
     // Any IP is accepted because signature verification is the load-bearing check.
     expect(IpAllowlist::allows('203.0.113.99', false))->toBeTrue();
 });
+
+test('an all-invalid allowlist override falls back to bundled IPs', function (): void {
+    Filters\expectApplied('wc_maya_webhook_allowed_ips')->andReturn([ 'not-an-ip', 123, ' ' ]);
+
+    expect(IpAllowlist::for_environment(false))->toBe(IpAllowlist::PRODUCTION_IPS);
+});
+
+test('a mixed allowlist override retains only valid trimmed IP literals', function (): void {
+    Filters\expectApplied('wc_maya_webhook_allowed_ips')->andReturn([ ' invalid ', ' 198.51.100.10 ', '::1' ]);
+
+    expect(IpAllowlist::for_environment(false))->toBe([ '198.51.100.10', '::1' ]);
+});

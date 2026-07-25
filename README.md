@@ -46,24 +46,33 @@ void / refund, block-based and classic checkout, HPOS, translatable.
 
 ### With Composer (Bedrock, and any Composer-managed site)
 
-Add the repository and require the package in the **site's** root `composer.json`:
+Add the repository, require and allow `composer/installers`, and map its
+`wordpress-plugin` installs in the **site root** `composer.json`:
 
-```jsonc
-"repositories": [
-  { "type": "vcs", "url": "https://github.com/roguedex-labs/woocommerce-maya-gateway" }
-],
-"require": {
-  "roguedex-labs/woocommerce-maya-gateway": "^1.1"
+```json
+{
+  "repositories": [
+    { "type": "vcs", "url": "https://github.com/roguedex-labs/woocommerce-maya-gateway" }
+  ],
+  "require": {
+    "composer/installers": "^2.3",
+    "roguedex-labs/woocommerce-maya-gateway": "^1.1"
+  },
+  "config": { "allow-plugins": { "composer/installers": true } },
+  "extra": {
+    "installer-paths": {
+      "web/app/plugins/{$name}/": [ "type:wordpress-plugin" ]
+    }
+  }
 }
 ```
 
-```bash
-composer update roguedex-labs/woocommerce-maya-gateway
-```
+Bedrock uses `web/app/plugins/{$name}/`; other Composer sites need an
+equivalent site-root mapping. Then run:
 
-`composer/installers` places it in the site's plugins directory. **Do not run
-`composer install` inside the plugin** — it has no runtime dependencies, and its
-classes are autoloaded from the project root.
+```bash
+composer update composer/installers roguedex-labs/woocommerce-maya-gateway
+```
 
 ### From a release zip (sites not using Composer)
 
@@ -107,12 +116,9 @@ Then activate in WP admin as above.
 | **Registered webhooks (live)** | Live read-back of every webhook on the Maya account, marked **managed** or **external**.                                |
 | **Simulate webhook**           | Sandbox-only. Dispatches a forged payload through the webhook pipeline in-process.                                      |
 
-## Architecture
-
 The plugin is organized by responsibility — see
-[docs/architecture.md](docs/architecture.md) for the file map and the
-"which file do I open?" table. Each phase of the rebuild has its own
-tour doc under [docs/rebuild-overview/](docs/rebuild-overview/).
+[architecture](https://github.com/roguedex-labs/woocommerce-maya-gateway/blob/main/docs/architecture.md)
+and the [rebuild overview](https://github.com/roguedex-labs/woocommerce-maya-gateway/tree/main/docs/rebuild-overview).
 
 ## Development
 
@@ -144,10 +150,8 @@ call across `src/` and `templates/` into
 `languages/wc-maya-gateway.pot`.
 
 ### Cut a release
-
-**A release is a git tag** — Composer resolves it straight from GitHub, and there
-is no artifact to upload. See **[docs/releasing.md](docs/releasing.md)** for the
-full process: version bumps, tagging, rolling it out to a site, and rollback.
+A release is a git tag; Composer resolves it from GitHub. See [releasing](https://github.com/roguedex-labs/woocommerce-maya-gateway/blob/main/docs/releasing.md)
+for versioning, tagging, rollout, and rollback.
 
 To build the optional zip for non-Composer sites:
 

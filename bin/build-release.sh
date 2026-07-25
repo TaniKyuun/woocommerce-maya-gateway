@@ -49,9 +49,8 @@ fi
 
 # Uncommitted work is not in `git archive` output, so say so rather than let
 # someone ship a zip that quietly omits the change they just made.
-git -C "${ROOT_DIR}" update-index -q --refresh || true
-if ! git -C "${ROOT_DIR}" diff-index --quiet HEAD --; then
-    echo "Warning: working tree has uncommitted changes; they are NOT in this build." >&2
+if [ -n "$(git -C "${ROOT_DIR}" status --porcelain --untracked-files=normal)" ]; then
+    echo "Warning: working tree has uncommitted or untracked changes; they are NOT in this build." >&2
 fi
 
 echo "Building ${PLUGIN_SLUG} v${VERSION} from ${REF}…"
@@ -86,8 +85,16 @@ done
 # the main file's built-in PSR-4 autoloader cannot load. Adding one silently
 # turns the zip into a plugin that fatals on a missing class, so stop here
 # instead — whoever added it needs to decide how it gets shipped.
-REQUIRES="$(git -C "${ROOT_DIR}" show "${REF}:composer.json" \
-    | php -r 'echo implode(" ", array_diff(array_keys(json_decode(file_get_contents("php://stdin"), true)["require"] ?? []), ["php"]));' 2>/dev/null || true)"
+if ! REQUIRES="$(git -C "${ROOT_DIR}" show "${REF}:composer.json" | php -r '
+    $composer = json_decode(file_get_contents("php://stdin"), false, 512, JSON_THROW_ON_ERROR);
+    if (! $composer instanceof stdClass || (property_exists($composer, "require") && ! ($composer->require instanceof stdClass))) {
+        exit(1);
+    }
+    echo implode(" ", array_diff(array_keys((array) ($composer->require ?? [])), ["php"]));
+')"; then
+    echo "Refusing to build: could not parse composer.json from ${REF}." >&2
+    exit 1
+fi
 if [ -n "${REQUIRES}" ]; then
     echo "Refusing to build: composer.json has runtime dependencies (${REQUIRES})." >&2
     echo "This zip ships no vendor/ — the plugin autoloads only its own src/." >&2

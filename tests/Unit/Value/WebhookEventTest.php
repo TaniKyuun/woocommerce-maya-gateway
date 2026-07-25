@@ -45,3 +45,10 @@ test('is_terminal_success is only PAYMENT_SUCCESS', function (): void {
         ->and(WebhookEvent::Authorized->is_terminal_success())->toBeFalse()
         ->and(WebhookEvent::CheckoutSuccess->is_terminal_success())->toBeFalse();
 });
+
+test('from_payload selects the first recognized live event field', function (): void {
+    expect(WebhookEvent::from_payload([ 'status' => 'COMPLETED', 'paymentStatus' => 'PAYMENT_SUCCESS' ]))->toBe(WebhookEvent::PaymentSuccess);
+    expect(WebhookEvent::from_payload([ 'status' => 'PAYMENT_FAILED', 'paymentStatus' => 'PAYMENT_SUCCESS' ]))->toBe(WebhookEvent::PaymentFailed);
+    expect(WebhookEvent::from_payload([ 'status' => 'unknown', 'paymentStatus' => 'PAYMENT_SUCCESS' ]))->toBe(WebhookEvent::PaymentSuccess);
+    expect(WebhookEvent::from_payload([ 'status' => 'unknown', 'name' => 'also_unknown' ]))->toBeNull();
+});

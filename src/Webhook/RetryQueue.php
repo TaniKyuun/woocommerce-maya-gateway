@@ -54,6 +54,8 @@ final class RetryQueue
         'order_not_found',
         'manual_capture_lookup_failed',
         'manual_capture_lookup_unavailable',
+        'mutation_in_progress',
+        'mutation_failed',
     ];
 
     public static function register(): void
@@ -133,8 +135,8 @@ final class RetryQueue
         // delivery; the only purpose of the replay is to re-run dispatch
         // now that whatever transient blocker (DB lag, lookup failure) has
         // had time to resolve.
-        $event_name = self::extract_event_name($payload);
-        $event      = \RogueDex\MayaGateway\Value\WebhookEvent::try_from_string($event_name);
+        $event = \RogueDex\MayaGateway\Value\WebhookEvent::from_payload($payload);
+        $event_name = null !== $event ? $event->value : '';
 
         if (null === $event) {
             $logger->warning('RetryQueue: replay payload has no recognizable event; dropping.', [
@@ -186,15 +188,6 @@ final class RetryQueue
     /**
      * @param array<string,mixed> $payload
      */
-    private static function extract_event_name(array $payload): string
-    {
-        foreach ([ 'status', 'paymentStatus', 'name' ] as $key) {
-            if (isset($payload[ $key ]) && is_string($payload[ $key ])) {
-                return $payload[ $key ];
-            }
-        }
-        return '';
-    }
 
     /**
      * @return array{is_sandbox: bool, debug_log: bool}

@@ -62,10 +62,16 @@ class IpAllowlist
             return $bundled;
         }
 
-        return array_values(array_filter(
+        if ([] === $ips) {
+            return [];
+        }
+
+        $ips = array_values(array_filter(
             array_map(static fn($ip): string => is_string($ip) ? trim($ip) : '', $ips),
-            static fn(string $ip): bool => '' !== $ip,
+            static fn(string $ip): bool => false !== filter_var($ip, FILTER_VALIDATE_IP),
         ));
+
+        return [] === $ips ? $bundled : $ips;
     }
 
     public static function allows(string $ip, bool $is_sandbox): bool

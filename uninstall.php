@@ -23,17 +23,23 @@ if (! defined('WP_UNINSTALL_PLUGIN')) {
     exit;
 }
 
-/*
- * Gateway settings option. Mirrors WC's option name for the gateway id
- * `maya_checkout` (see MayaGateway::ID) — kept as a literal because the Composer
- * autoloader is not guaranteed to be loaded during uninstall.
- */
-delete_option('woocommerce_maya_checkout_settings');
+$cleanup = static function (): void {
+    delete_option('woocommerce_maya_checkout_settings');
+    if (function_exists('as_unschedule_all_actions')) {
+        as_unschedule_all_actions('wc_maya_replay_webhook', null, 'wc-maya-gateway');
+    }
+};
 
-/*
- * Cancel any scheduled webhook-replay jobs (RetryQueue::GROUP =
- * 'wc-maya-gateway', RetryQueue::ACTION_HOOK = 'wc_maya_replay_webhook').
- */
-if (function_exists('as_unschedule_all_actions')) {
-    as_unschedule_all_actions('wc_maya_replay_webhook', null, 'wc-maya-gateway');
+if (! is_multisite()) {
+    $cleanup();
+    return;
+}
+
+foreach (get_sites([ 'fields' => 'ids' ]) as $site_id) {
+    switch_to_blog((int) $site_id);
+    try {
+        $cleanup();
+    } finally {
+        restore_current_blog();
+    }
 }

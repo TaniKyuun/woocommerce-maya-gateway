@@ -111,30 +111,34 @@ class EventDispatcher
         }
 
         if ($event->is_terminal_failure()) {
-            $result = $this->mark_failed($order, $event);
-            WebhookLedger::record($order, $event, $payload, $result['action']);
-            return $result;
+            return $this->mutate_terminal(
+                $order,
+                $event,
+                $payload,
+                $ledger_key,
+                fn(WC_Order $locked_order): array => $this->mark_failed($locked_order, $event),
+            );
         }
-
-        $auth_type = AuthorizationType::from_setting($order->get_meta(MayaGateway::META_AUTHORIZATION_TYPE));
 
         if (WebhookEvent::PaymentSuccess === $event) {
-            $result = $auth_type->is_manual_capture()
-                ? $this->complete_manual_capture($order, $payload)
-                : $this->complete_payment($order, $payload);
-            WebhookLedger::record($order, $event, $payload, $result['action']);
-
-            // Extension seam: fire only on an actual completion so integrations
-            // (fulfilment, analytics, a future multi-method layer) can react to
-            // a confirmed Maya payment without re-parsing webhooks.
-            if (in_array($result['action'], [ 'payment_complete', 'payment_complete_full_capture' ], true)) {
-                do_action('wc_maya_payment_confirmed', (int) $order->get_id(), $payload);
-            }
-
-            return $result;
+            return $this->mutate_terminal(
+                $order,
+                $event,
+                $payload,
+                $ledger_key,
+                function (WC_Order $locked_order) use ($payload): array {
+                    $result = $this->prepare_payment_success($locked_order, $payload);
+                    return in_array($result['action'], [ 'payment_complete', 'payment_complete_full_capture' ], true)
+                        ? $this->finish_payment($locked_order, $result)
+                        : $result;
+                },
+            );
         }
 
-        if (WebhookEvent::Authorized === $event && $auth_type->is_manual_capture()) {
+        if (
+            WebhookEvent::Authorized === $event
+            && AuthorizationType::from_setting($order->get_meta(MayaGateway::META_AUTHORIZATION_TYPE))->is_manual_capture()
+        ) {
             return $this->note_authorized($order, $payload);
         }
 
@@ -148,172 +152,142 @@ class EventDispatcher
 
     /**
      * @param array<string,mixed> $payload
-     *
+     * @param callable(WC_Order): array{action: string, order_id: int, payment_id?: string, event?: string} $mutate
+     * @return array{action: string, order_id: int, payment_id?: string, event?: string}
+     */
+    private function mutate_terminal(WC_Order $order, WebhookEvent $event, array $payload, string $ledger_key, callable $mutate): array
+    {
+        if (! WebhookLedger::acquire_lock($order)) {
+            return [ 'action' => 'mutation_in_progress', 'order_id' => (int) $order->get_id(), 'event' => $event->value ];
+        }
+
+        try {
+            $locked_order = self::find_order($order->get_id());
+            if (! $locked_order instanceof WC_Order) {
+                return [ 'action' => 'mutation_in_progress', 'order_id' => (int) $order->get_id(), 'event' => $event->value ];
+            }
+
+            $duplicate = WebhookLedger::has($locked_order, $ledger_key);
+            if ($locked_order->is_paid() || $duplicate) {
+                return [
+                    'action'   => $duplicate ? 'duplicate' : 'already_paid',
+                    'order_id' => (int) $locked_order->get_id(),
+                    'event'    => $event->value,
+                ];
+            }
+
+            $result = $mutate($locked_order);
+            if ('mutation_failed' === $result['action']) {
+                return [ ...$result, 'event' => $event->value ];
+            }
+
+            WebhookLedger::record($locked_order, $event, $payload, $result['action']);
+            if (in_array($result['action'], [ 'payment_complete', 'payment_complete_full_capture' ], true)) {
+                do_action('wc_maya_payment_confirmed', (int) $locked_order->get_id(), $payload);
+            }
+
+            return $result;
+        } finally {
+            WebhookLedger::release_lock($order);
+        }
+    }
+
+    /**
+     * @param array<string,mixed> $payload
+     * @return array{action: string, order_id: int, payment_id?: string}
+     */
+    private function prepare_payment_success(WC_Order $order, array $payload): array
+    {
+        $auth_type = AuthorizationType::from_setting($order->get_meta(MayaGateway::META_AUTHORIZATION_TYPE));
+        return $auth_type->is_manual_capture()
+            ? $this->complete_manual_capture($order, $payload)
+            : $this->complete_payment($order, $payload);
+    }
+
+    /**
+     * @param array{action: string, order_id: int, payment_id?: string} $result
+     * @return array{action: string, order_id: int, payment_id?: string}
+     */
+    private function finish_payment(WC_Order $order, array $result): array
+    {
+        $payment_id = $result['payment_id'] ?? '';
+        if (false === $order->payment_complete($payment_id)) {
+            $this->logger->warning('EventDispatcher: payment_complete() failed.', [ 'order_id' => $order->get_id(), 'payment_id' => $payment_id ]);
+            return [ 'action' => 'mutation_failed', 'order_id' => (int) $order->get_id(), 'payment_id' => $payment_id ];
+        }
+
+        $this->logger->info('EventDispatcher: payment_complete().', [ 'order_id' => $order->get_id(), 'payment_id' => $payment_id ]);
+        return $result;
+    }
+
+    /**
+     * @param array<string,mixed> $payload
      * @return array{action: string, order_id: int, payment_id?: string, expected?: float, received?: float}
      */
     private function complete_payment(WC_Order $order, array $payload): array
     {
         $expected = (float) $order->get_total();
         $received = (float) ($payload['amount'] ?? 0);
-
-        // Currency must match too: a webhook with the right number but a
-        // different currency (e.g. order in PHP, payload says USD) would
-        // otherwise complete the order at a wrong real value. Maya is
-        // PHP-only today, but this is cheap defense-in-depth. When the
-        // payload omits currency we fall back to the order's so legitimate
-        // currency-less payloads aren't rejected.
         $expected_currency = strtoupper((string) $order->get_currency());
         $received_currency = isset($payload['currency']) && is_string($payload['currency']) && '' !== $payload['currency']
             ? strtoupper($payload['currency'])
             : $expected_currency;
 
-        $amount_matches   = abs($expected - $received) < self::AMOUNT_TOLERANCE;
-        $currency_matches = $expected_currency === $received_currency;
-
-        if (! $amount_matches || ! $currency_matches) {
+        if (abs($expected - $received) >= self::AMOUNT_TOLERANCE || $expected_currency !== $received_currency) {
             $this->logger->error('EventDispatcher: amount/currency mismatch — leaving order alone.', [
-                'order_id'          => $order->get_id(),
-                'expected'          => $expected,
-                'received'          => $received,
-                'expected_currency' => $expected_currency,
-                'received_currency' => $received_currency,
+                'order_id' => $order->get_id(), 'expected' => $expected, 'received' => $received,
+                'expected_currency' => $expected_currency, 'received_currency' => $received_currency,
             ]);
             $order->add_order_note(sprintf(
-                /* translators: 1: expected amount, 2: received amount, 3: expected currency, 4: received currency. */
                 __('Maya PAYMENT_SUCCESS webhook arrived with a mismatched amount/currency (expected %1$s %3$s, received %2$s %4$s). Order state left unchanged for manual review.', 'wc-maya-gateway'),
-                $expected,
-                $received,
-                $expected_currency,
-                $received_currency,
+                $expected, $received, $expected_currency, $received_currency,
             ));
             return [
-                'action'            => 'amount_mismatch',
-                'order_id'          => (int) $order->get_id(),
-                'expected'          => $expected,
-                'received'          => $received,
-                'expected_currency' => $expected_currency,
-                'received_currency' => $received_currency,
+                'action' => 'amount_mismatch', 'order_id' => (int) $order->get_id(),
+                'expected' => $expected, 'received' => $received,
+                'expected_currency' => $expected_currency, 'received_currency' => $received_currency,
             ];
         }
 
         $payment_id = isset($payload['id']) && is_string($payload['id']) ? $payload['id'] : '';
-        $order->payment_complete($payment_id);
-
-        $this->logger->info('EventDispatcher: payment_complete().', [
-            'order_id'   => $order->get_id(),
-            'payment_id' => $payment_id,
-        ]);
-
-        return [
-            'action'     => 'payment_complete',
-            'order_id'   => (int) $order->get_id(),
-            'payment_id' => $payment_id,
-        ];
+        return [ 'action' => 'payment_complete', 'order_id' => (int) $order->get_id(), 'payment_id' => $payment_id ];
     }
 
     /**
-     * Manual-capture branch: only promote to `completed` when the
-     * authorization's cumulative captured amount has caught up to its
-     * authorized total. Until then, leave the order in `processing` and
-     * record the partial in a note.
-     *
-     * The webhook payload describes only *this* capture event — its
-     * `amount`/`id` are the capture's, not the authorization's cumulative
-     * state. So we re-fetch the AUTHORIZED record via `Payments::get_by_rrn`
-     * (the legacy plugin did the same) and compare its `amount` vs
-     * `capturedAmount`. When the Payments endpoint isn't injected (only
-     * unit tests skip it), we fail closed with a `lookup_unavailable`
-     * action so a missing wiring is loud rather than silent.
-     *
      * @param array<string,mixed> $payload
-     *
      * @return array{action: string, order_id: int, payment_id?: string, authorized?: float, captured?: float}
      */
     private function complete_manual_capture(WC_Order $order, array $payload): array
     {
         $payment_id = isset($payload['id']) && is_string($payload['id']) ? $payload['id'] : '';
-
         if (null === $this->payments) {
-            $this->logger->error('EventDispatcher: manual-capture branch reached without a Payments endpoint.', [
-                'order_id'   => $order->get_id(),
-                'payment_id' => $payment_id,
-            ]);
-            return [
-                'action'     => 'manual_capture_lookup_unavailable',
-                'order_id'   => (int) $order->get_id(),
-                'payment_id' => $payment_id,
-            ];
+            $this->logger->error('EventDispatcher: manual-capture branch reached without a Payments endpoint.', [ 'order_id' => $order->get_id(), 'payment_id' => $payment_id ]);
+            return [ 'action' => 'manual_capture_lookup_unavailable', 'order_id' => (int) $order->get_id(), 'payment_id' => $payment_id ];
         }
 
         $records = $this->payments->get_by_rrn(IdempotencyKey::for_order((int) $order->get_id()));
         if ($records instanceof WP_Error) {
-            $this->logger->error('EventDispatcher: payment lookup failed during manual-capture check.', [
-                'order_id'   => $order->get_id(),
-                'payment_id' => $payment_id,
-                'code'       => $records->get_error_code(),
-                'message'    => $records->get_error_message(),
-            ]);
-            return [
-                'action'     => 'manual_capture_lookup_failed',
-                'order_id'   => (int) $order->get_id(),
-                'payment_id' => $payment_id,
-            ];
+            $this->logger->error('EventDispatcher: payment lookup failed during manual-capture check.', [ 'order_id' => $order->get_id(), 'payment_id' => $payment_id, 'code' => $records->get_error_code(), 'message' => $records->get_error_message() ]);
+            return [ 'action' => 'manual_capture_lookup_failed', 'order_id' => (int) $order->get_id(), 'payment_id' => $payment_id ];
         }
 
         $authorization = self::find_authorization_record($records);
         if (! $authorization instanceof PaymentRecord) {
-            $this->logger->warning('EventDispatcher: no AUTHORIZED record on a manual-capture order.', [
-                'order_id'   => $order->get_id(),
-                'payment_id' => $payment_id,
-            ]);
-            return [
-                'action'     => 'manual_capture_no_authorization',
-                'order_id'   => (int) $order->get_id(),
-                'payment_id' => $payment_id,
-            ];
+            $this->logger->warning('EventDispatcher: no AUTHORIZED record on a manual-capture order.', [ 'order_id' => $order->get_id(), 'payment_id' => $payment_id ]);
+            return [ 'action' => 'manual_capture_no_authorization', 'order_id' => (int) $order->get_id(), 'payment_id' => $payment_id ];
         }
 
         $authorized = $authorization->amount->value;
-        $captured   = null !== $authorization->captured_amount ? $authorization->captured_amount->value : 0.0;
-
-        if (abs($authorized - $captured) < self::AMOUNT_TOLERANCE) {
-            $order->payment_complete($payment_id);
-            $this->logger->info('EventDispatcher: manual-capture full → payment_complete().', [
-                'order_id'   => $order->get_id(),
-                'payment_id' => $payment_id,
-                'authorized' => $authorized,
-                'captured'   => $captured,
-            ]);
-            return [
-                'action'     => 'payment_complete_full_capture',
-                'order_id'   => (int) $order->get_id(),
-                'payment_id' => $payment_id,
-                'authorized' => $authorized,
-                'captured'   => $captured,
-            ];
+        $captured = null !== $authorization->captured_amount ? $authorization->captured_amount->value : 0.0;
+        if (abs($authorized - $captured) >= self::AMOUNT_TOLERANCE) {
+            $order->add_order_note(sprintf(
+                __('Maya partial capture confirmed: %1$s of %2$s captured. Order will complete when the remaining balance is captured.', 'wc-maya-gateway'),
+                $captured, $authorized,
+            ));
+            return [ 'action' => 'partial_capture_note', 'order_id' => (int) $order->get_id(), 'payment_id' => $payment_id, 'authorized' => $authorized, 'captured' => $captured ];
         }
 
-        $order->add_order_note(sprintf(
-            /* translators: 1: cumulative captured amount, 2: authorized total. */
-            __('Maya partial capture confirmed: %1$s of %2$s captured. Order will complete when the remaining balance is captured.', 'wc-maya-gateway'),
-            $captured,
-            $authorized,
-        ));
-
-        $this->logger->info('EventDispatcher: manual-capture partial — note added, no state change.', [
-            'order_id'   => $order->get_id(),
-            'payment_id' => $payment_id,
-            'authorized' => $authorized,
-            'captured'   => $captured,
-        ]);
-
-        return [
-            'action'     => 'partial_capture_note',
-            'order_id'   => (int) $order->get_id(),
-            'payment_id' => $payment_id,
-            'authorized' => $authorized,
-            'captured'   => $captured,
-        ];
+        return [ 'action' => 'payment_complete_full_capture', 'order_id' => (int) $order->get_id(), 'payment_id' => $payment_id, 'authorized' => $authorized, 'captured' => $captured ];
     }
 
     /**
@@ -373,7 +347,17 @@ class EventDispatcher
         // status (unlike `cancelled`, which restores stock and blocks re-payment).
         // The customer can pay again from the order-pay page; genuine
         // abandonment is caught by PAYMENT_EXPIRED.
-        $order->update_status('failed', $note);
+        if (false === $order->update_status('failed', $note)) {
+            $this->logger->warning('EventDispatcher: update_status() failed.', [
+                'order_id' => $order->get_id(),
+                'event'    => $event->value,
+            ]);
+            return [
+                'action'   => 'mutation_failed',
+                'order_id' => (int) $order->get_id(),
+                'event'    => $event->value,
+            ];
+        }
 
         $this->logger->info('EventDispatcher: order failed.', [
             'order_id' => $order->get_id(),

@@ -39,6 +39,21 @@ enum WebhookEvent: string
         return self::tryFrom(trim($value));
     }
 
+    /**
+     * @param array<string,mixed> $payload
+     */
+    public static function from_payload(array $payload): ?self
+    {
+        foreach ([ 'status', 'paymentStatus', 'name' ] as $key) {
+            $event = self::try_from_string($payload[ $key ] ?? null);
+            if (null !== $event) {
+                return $event;
+            }
+        }
+
+        return null;
+    }
+
     public function is_terminal_failure(): bool
     {
         // Order state is driven by PAYMENT_* events only. The CHECKOUT_* family

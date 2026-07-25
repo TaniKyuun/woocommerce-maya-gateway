@@ -12,6 +12,8 @@ namespace RogueDex\MayaGateway\Tests\Unit\Webhook;
 
 use RogueDex\MayaGateway\Value\WebhookEvent;
 use RogueDex\MayaGateway\Webhook\WebhookLedger;
+use Mockery;
+use WC_Order;
 
 test('entry_key prefers the Maya payment id', function (): void {
     $key = WebhookLedger::entry_key(
@@ -49,4 +51,25 @@ test('only terminal actions are recordable', function (): void {
     expect(WebhookLedger::is_terminal_action('manual_capture_lookup_failed'))->toBeFalse();
     expect(WebhookLedger::is_terminal_action('partial_capture_note'))->toBeFalse();
     expect(WebhookLedger::is_terminal_action('already_paid'))->toBeFalse();
+});
+
+test('advisory locks use a bounded per-order name', function (): void {
+    if (! defined('DB_NAME')) {
+        define('DB_NAME', 'wordpress_test');
+    }
+    $order = Mockery::mock(WC_Order::class);
+    $order->expects('get_id')->twice()->andReturn(42);
+    $wpdb = Mockery::mock();
+    $wpdb->prefix = 'wp_';
+    $name = 'wc_maya_webhook_' . substr(hash('sha256', DB_NAME . ':wp_:42'), 0, 48);
+    expect(strlen($name))->toBe(64);
+
+    $wpdb->expects('prepare')->with('SELECT GET_LOCK(%s, 0)', $name)->andReturn('get');
+    $wpdb->expects('get_var')->with('get')->andReturn(1);
+    $wpdb->expects('prepare')->with('SELECT RELEASE_LOCK(%s)', $name)->andReturn('release');
+    $wpdb->expects('get_var')->with('release')->andReturn(1);
+    $GLOBALS['wpdb'] = $wpdb;
+
+    expect(WebhookLedger::acquire_lock($order))->toBeTrue();
+    WebhookLedger::release_lock($order);
 });

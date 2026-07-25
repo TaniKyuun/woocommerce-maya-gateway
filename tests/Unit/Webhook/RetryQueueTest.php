@@ -50,6 +50,13 @@ test('should_schedule is false at or beyond the attempt cap', function (): void 
     expect(RetryQueue::should_schedule([ 'action' => 'order_not_found' ], RetryQueue::MAX_ATTEMPTS + 1))->toBeFalse();
 });
 
+test('mutation retries obey the same cap', function (): void {
+    foreach ([ 'mutation_in_progress', 'mutation_failed' ] as $action) {
+        expect(RetryQueue::should_schedule([ 'action' => $action ], 1))->toBeTrue();
+        expect(RetryQueue::should_schedule([ 'action' => $action ], RetryQueue::MAX_ATTEMPTS))->toBeFalse();
+    }
+});
+
 test('should_schedule is false when no action key is present', function (): void {
     expect(RetryQueue::should_schedule([], 1))->toBeFalse();
 });
@@ -69,11 +76,13 @@ test('MAX_ATTEMPTS is 4 (matches Maya retry budget on their side)', function ():
     expect(RetryQueue::MAX_ATTEMPTS)->toBe(4);
 });
 
-test('RETRYABLE_ACTIONS lists exactly the three transient dispatch actions', function (): void {
+test('RETRYABLE_ACTIONS includes every transient dispatch action', function (): void {
     expect(RetryQueue::RETRYABLE_ACTIONS)->toEqualCanonicalizing([
         'order_not_found',
         'manual_capture_lookup_failed',
         'manual_capture_lookup_unavailable',
+        'mutation_in_progress',
+        'mutation_failed',
     ]);
 });
 

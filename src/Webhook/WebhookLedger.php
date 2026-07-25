@@ -75,6 +75,22 @@ final class WebhookLedger
         return $event->value . ':rrn:' . $rrn;
     }
 
+    public static function acquire_lock(WC_Order $order): bool
+    {
+        global $wpdb;
+
+        $name = self::lock_name($order);
+        return 1 === (int) $wpdb->get_var($wpdb->prepare('SELECT GET_LOCK(%s, 0)', $name));
+    }
+
+    public static function release_lock(WC_Order $order): void
+    {
+        global $wpdb;
+
+        $name = self::lock_name($order);
+        $wpdb->get_var($wpdb->prepare('SELECT RELEASE_LOCK(%s)', $name));
+    }
+
     public static function is_terminal_action(string $action): bool
     {
         return in_array($action, self::TERMINAL_ACTIONS, true);
@@ -120,7 +136,16 @@ final class WebhookLedger
         }
 
         $order->update_meta_data(MayaGateway::META_WEBHOOK_LOG, (string) wp_json_encode($log));
+
         $order->save();
+    }
+
+    private static function lock_name(WC_Order $order): string
+    {
+        global $wpdb;
+
+        $namespace = (defined('DB_NAME') ? DB_NAME : '') . ':' . $wpdb->prefix;
+        return 'wc_maya_webhook_' . substr(hash('sha256', $namespace . ':' . $order->get_id()), 0, 48);
     }
 
     /**

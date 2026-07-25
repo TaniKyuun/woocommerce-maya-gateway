@@ -97,16 +97,16 @@ class Registrar
         }
 
         $managed_names = self::managed_names();
-        // Delete anything we currently manage OR used to manage (deprecated),
-        // so a migration off the deprecated set actually removes it from Maya.
-        $cleanup_names = array_merge($managed_names, self::DEPRECATED_EVENT_NAMES);
-
         $deleted = [];
         $skipped = [];
         $errors  = [];
 
         foreach ($existing as $record) {
-            if (! in_array($record->name, $cleanup_names, true)) {
+            $is_managed = in_array($record->name, $managed_names, true);
+            $is_owned_deprecated = in_array($record->name, self::DEPRECATED_EVENT_NAMES, true)
+                && $record->callback_url === $callback_url;
+
+            if (! $is_managed && ! $is_owned_deprecated) {
                 $skipped[] = $record->name;
                 continue;
             }

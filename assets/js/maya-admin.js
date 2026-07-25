@@ -22,9 +22,7 @@
   }
 
   function renderError($container, message) {
-    $container
-      .empty()
-      .append($('<p class="wc-maya-error"></p>').text(message));
+    $container.empty().append($('<p class="wc-maya-error"></p>').text(message));
   }
 
   function renderTableError($table, message) {
@@ -229,7 +227,9 @@
 
     rows.forEach(function (row) {
       const $tr = $("<tr></tr>");
-      $tr.append($("<td></td>").append($("<code></code>").text(row.name || "")));
+      $tr.append(
+        $("<td></td>").append($("<code></code>").text(row.name || "")),
+      );
       $tr.append($("<td></td>").text(row.callbackUrl || ""));
       $tr.append($("<td></td>").text(row.createdAt || ""));
       $tr.append(
@@ -336,7 +336,10 @@
 
     if ($trigger.length) {
       $trigger.on("click", function () {
-        $panel.attr("hidden", false).find("#wc-maya-capture-amount").trigger("focus");
+        $panel
+          .attr("hidden", false)
+          .find("#wc-maya-capture-amount")
+          .trigger("focus");
       });
     } else {
       // No "Capture" trigger button (e.g. all funds already captured) — show
@@ -358,7 +361,9 @@
         return;
       }
 
-      $result.empty().append($("<p></p>").text(wcMayaAdmin.i18n.captureSubmitting));
+      $result
+        .empty()
+        .append($("<p></p>").text(wcMayaAdmin.i18n.captureSubmitting));
       setBusy($spinner, $submit, true);
 
       $.post(wcMayaAdmin.ajaxUrl, {
@@ -387,9 +392,11 @@
 
             $result
               .empty()
-              .append($('<p class="wc-maya-ok"></p>').text(
-                wcMayaAdmin.i18n.captureSuccess,
-              ));
+              .append(
+                $('<p class="wc-maya-ok"></p>').text(
+                  wcMayaAdmin.i18n.captureSuccess,
+                ),
+              );
             return;
           }
           renderError($result, ajaxMessage(response));

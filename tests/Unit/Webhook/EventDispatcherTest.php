@@ -26,6 +26,14 @@ use WP_Error;
 beforeEach(function (): void {
     Functions\when('__')->alias(static fn(string $text, string $domain = ''): string => $text);
     Functions\when('wp_json_encode')->alias(static fn(mixed $data): string|false => json_encode($data));
+    if (! defined('DB_NAME')) {
+        define('DB_NAME', 'wordpress_test');
+    }
+    $wpdb = Mockery::mock();
+    $wpdb->prefix = 'wp_';
+    $wpdb->shouldReceive('prepare')->andReturnUsing(static fn(string $query, string $name): string => str_replace('%s', "'{$name}'", $query))->byDefault();
+    $wpdb->shouldReceive('get_var')->andReturn(1)->byDefault();
+    $GLOBALS['wpdb'] = $wpdb;
 });
 
 function wc_maya_mock_order(int $id, float $total, bool $is_paid = false, string $auth_type = 'none', string $currency = 'PHP', string $webhook_log = ''): WC_Order
@@ -477,4 +485,148 @@ test('a terminal success records a snapshot to the webhook ledger', function ():
     );
 
     expect($result['action'])->toBe('payment_complete');
+});
+
+test('failed terminal mutations are retried without recording the ledger', function (): void {
+    $order = wc_maya_mock_order(42, 100.0);
+    $order->expects('payment_complete')->with('pay_1')->andReturnFalse();
+    $order->shouldNotReceive('update_meta_data');
+    $order->shouldNotReceive('save');
+    Functions\when('wc_get_order')->alias(static fn(): WC_Order => $order);
+
+    $result = (new EventDispatcher(new Logger(false)))->dispatch(WebhookEvent::PaymentSuccess, [
+        'id' => 'pay_1', 'amount' => 100.0, 'requestReferenceNumber' => '42',
+    ]);
+
+    expect($result)->toMatchArray([ 'action' => 'mutation_failed', 'event' => 'PAYMENT_SUCCESS' ]);
+});
+
+test('terminal mutation lock contention leaves the order untouched', function (): void {
+    $order = wc_maya_mock_order(42, 100.0);
+    $order->shouldNotReceive('payment_complete');
+    $order->shouldNotReceive('update_meta_data');
+    $order->shouldNotReceive('save');
+    $wpdb = Mockery::mock();
+    $wpdb->prefix = 'wp_';
+    $wpdb->expects('prepare')->andReturn('lock');
+    $wpdb->expects('get_var')->with('lock')->andReturn(0);
+    $GLOBALS['wpdb'] = $wpdb;
+    Functions\when('wc_get_order')->alias(static fn(): WC_Order => $order);
+
+    $result = (new EventDispatcher(new Logger(false)))->dispatch(WebhookEvent::PaymentSuccess, [
+        'id' => 'pay_1', 'amount' => 100.0, 'requestReferenceNumber' => '42',
+    ]);
+
+    expect($result['action'])->toBe('mutation_in_progress');
+});
+
+test('a failed full capture does not record the ledger or confirm payment', function (): void {
+    $order = wc_maya_mock_order(42, 100.0, auth_type: 'normal');
+    $order->expects('payment_complete')->with('pay_full')->andReturnFalse();
+    $order->shouldNotReceive('update_meta_data');
+    $order->shouldNotReceive('save');
+    Functions\expect('do_action')->never();
+    Functions\when('wc_get_order')->alias(static fn(): WC_Order => $order);
+    $payments = Mockery::mock(Payments::class);
+    $payments->expects('get_by_rrn')->with('42')->andReturn([ wc_maya_authorization_record(100.0, 100.0) ]);
+
+    $result = (new EventDispatcher(new Logger(false), $payments))->dispatch(WebhookEvent::PaymentSuccess, [
+        'id' => 'pay_full', 'amount' => 100.0, 'requestReferenceNumber' => '42',
+    ]);
+
+    expect($result['action'])->toBe('mutation_failed');
+    expect($result)->toMatchArray([ 'action' => 'mutation_failed', 'event' => 'PAYMENT_SUCCESS' ]);
+});
+
+test('a failed status update does not record the ledger', function (): void {
+    $order = wc_maya_mock_order(42, 100.0);
+    $order->expects('update_status')->with('failed', Mockery::type('string'))->andReturnFalse();
+    $order->shouldNotReceive('update_meta_data');
+    $order->shouldNotReceive('save');
+    Functions\expect('do_action')->never();
+    Functions\when('wc_get_order')->alias(static fn(): WC_Order => $order);
+
+    $result = (new EventDispatcher(new Logger(false)))->dispatch(WebhookEvent::PaymentFailed, [
+        'requestReferenceNumber' => '42',
+    ]);
+
+    expect($result)->toMatchArray([ 'action' => 'mutation_failed', 'event' => 'PAYMENT_FAILED' ]);
+});
+
+test('an exception during payment mutation releases the advisory lock', function (): void {
+    $order = wc_maya_mock_order(42, 100.0);
+    $order->expects('payment_complete')->with('pay_1')->andThrow(new \RuntimeException('boom'));
+    Functions\when('wc_get_order')->alias(static fn(): WC_Order => $order);
+    $wpdb = Mockery::mock();
+    $wpdb->prefix = 'wp_';
+    $wpdb->expects('prepare')->with('SELECT GET_LOCK(%s, 0)', Mockery::type('string'))->andReturn('get');
+    $wpdb->expects('get_var')->with('get')->andReturn(1);
+    $wpdb->expects('prepare')->with('SELECT RELEASE_LOCK(%s)', Mockery::type('string'))->andReturn('release');
+    $wpdb->expects('get_var')->with('release')->andReturn(1);
+    $GLOBALS['wpdb'] = $wpdb;
+
+    expect(fn() => (new EventDispatcher(new Logger(false)))->dispatch(WebhookEvent::PaymentSuccess, [
+        'id' => 'pay_1', 'amount' => 100.0, 'requestReferenceNumber' => '42',
+    ]))->toThrow(\RuntimeException::class, 'boom');
+});
+
+test('post-lock paid floor uses freshly loaded order state for failures', function (): void {
+    $stale = wc_maya_mock_order(42, 100.0);
+    $fresh = wc_maya_mock_order(42, 100.0, is_paid: true);
+    $stale->shouldNotReceive('update_status');
+    $fresh->shouldNotReceive('update_status');
+    $fresh->shouldNotReceive('update_meta_data');
+    $fresh->shouldNotReceive('save');
+
+    $calls = 0;
+    Functions\when('wc_get_order')->alias(static function () use (&$calls, $stale, $fresh): WC_Order {
+        return 0 === $calls++ ? $stale : $fresh;
+    });
+
+    $result = (new EventDispatcher(new Logger(false)))->dispatch(WebhookEvent::PaymentFailed, [
+        'requestReferenceNumber' => '42',
+    ]);
+
+    expect($result['action'])->toBe('already_paid');
+});
+
+test('post-lock payment validation uses the freshly loaded total', function (): void {
+    $stale = wc_maya_mock_order(42, 100.0);
+    $fresh = wc_maya_mock_order(42, 200.0);
+    $fresh->shouldNotReceive('payment_complete');
+    $fresh->shouldReceive('add_order_note')->once();
+    $fresh->shouldNotReceive('update_meta_data');
+    $fresh->shouldNotReceive('save');
+    Functions\expect('do_action')->never();
+
+    $calls = 0;
+    Functions\when('wc_get_order')->alias(static function () use (&$calls, $stale, $fresh): WC_Order {
+        return 0 === $calls++ ? $stale : $fresh;
+    });
+
+    $result = (new EventDispatcher(new Logger(false)))->dispatch(WebhookEvent::PaymentSuccess, [
+        'id' => 'pay_1', 'amount' => 100.0, 'requestReferenceNumber' => '42',
+    ]);
+
+    expect($result)->toMatchArray([ 'action' => 'amount_mismatch', 'expected' => 200.0, 'received' => 100.0 ]);
+});
+
+test('post-lock payment dispatch uses the freshly loaded authorization mode', function (): void {
+    $stale = wc_maya_mock_order(42, 100.0);
+    $fresh = wc_maya_mock_order(42, 100.0, auth_type: 'normal');
+    $fresh->expects('payment_complete')->with('pay_1')->andReturnTrue();
+
+    $calls = 0;
+    Functions\when('wc_get_order')->alias(static function () use (&$calls, $stale, $fresh): WC_Order {
+        return 0 === $calls++ ? $stale : $fresh;
+    });
+
+    $payments = Mockery::mock(Payments::class);
+    $payments->expects('get_by_rrn')->with('42')->andReturn([ wc_maya_authorization_record(100.0, 100.0) ]);
+
+    $result = (new EventDispatcher(new Logger(false), $payments))->dispatch(WebhookEvent::PaymentSuccess, [
+        'id' => 'pay_1', 'amount' => 100.0, 'requestReferenceNumber' => '42',
+    ]);
+
+    expect($result['action'])->toBe('payment_complete_full_capture');
 });

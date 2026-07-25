@@ -46,7 +46,7 @@ live-validated. These reversal/infra gates are **not** yet proven and block prod
       "Invalid key scope"` if the key lacks Payments scope. A Checkout-only sandbox
       app exhibits exactly this — enable the Payments product / add a Vault-scoped
       key before relying on refunds.
-- [ ] Run the test suite green: `ddev exec -d /var/www/html/web/app/plugins/woocommerce-maya-gateway vendor/bin/pest`.
+- [ ] In a development checkout with development dependencies, run `ddev exec -d /var/www/html/web/app/plugins/woocommerce-maya-gateway composer test`.
 - [ ] Sandbox keys entered; **Test mode ON**; place a full sandbox order and confirm the **webhook** (not the redirect) moves the order to *Processing/Completed*.
 - [ ] Abandon a payment at Maya's page → order does **not** complete.
 - [ ] Exercise: manual capture, partial capture, void, refund in sandbox; confirm each in both WooCommerce and the Maya dashboard.
@@ -65,10 +65,7 @@ still process (idempotent + monotonic, so this is safe).
 ## Rollback
 
 - **Config rollback:** flip Test mode back on / disable the gateway (above).
-- **Version rollback:** deactivate the plugin, reinstall the previous release zip
-  (`bin/build-release.sh` builds one), reactivate. Settings persist in
-  `woocommerce_maya_checkout_settings`; order data is untouched. Decide *who*
-  authorizes a rollback and how they're reachable out-of-hours **before** launch.
+- **Version rollback:** Composer/Bedrock restores the prior deployed dependency-update commit and `composer.lock`; manual installs reinstall a previous *published* release asset. If no usable prior release exists, issue a corrective roll-forward release. Settings persist in `woocommerce_maya_checkout_settings`; order data is untouched.
 
 ## Incident: "money left my account but I have no order"
 

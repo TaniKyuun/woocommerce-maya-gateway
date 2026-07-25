@@ -41,14 +41,14 @@ Features:
 3. Go to **WooCommerce → Settings → Payments → Maya Checkout**.
 4. Enter your Maya public and secret keys. Start with **Test mode ON**.
 5. Save — the plugin registers the required webhooks with Maya automatically.
-6. Complete the go-live checklist in `docs/go-live-runbook.md` before disabling
+6. Complete the [go-live checklist](https://github.com/roguedex-labs/woocommerce-maya-gateway/blob/main/docs/go-live-runbook.md) before disabling
    Test mode.
 
 == Frequently Asked Questions ==
 
 = A customer says they paid but there is no completed order. What do I do? =
 
-See the incident playbook in `docs/go-live-runbook.md`. In short: check the
+See the [incident playbook](https://github.com/roguedex-labs/woocommerce-maya-gateway/blob/main/docs/go-live-runbook.md). In short: check the
 order's Maya event history and the `wc-maya-gateway` log, confirm the charge in
 the Maya Manager dashboard by reference number, then let the retry/replay land
 or complete/refund manually.

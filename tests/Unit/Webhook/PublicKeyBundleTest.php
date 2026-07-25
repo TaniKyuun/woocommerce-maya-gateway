@@ -18,9 +18,9 @@ test('exposes two PEMs per environment', function (): void {
     expect(PublicKeyBundle::PRODUCTION_PEMS)->toHaveCount(2);
 });
 
-test('for_environment switches by sandbox flag', function (): void {
-    expect(PublicKeyBundle::for_environment(true))->toBe(PublicKeyBundle::SANDBOX_PEMS);
-    expect(PublicKeyBundle::for_environment(false))->toBe(PublicKeyBundle::PRODUCTION_PEMS);
+test('for_environment returns validated keys by sandbox flag', function (): void {
+    expect(PublicKeyBundle::for_environment(true))->toBe(array_map('trim', PublicKeyBundle::SANDBOX_PEMS));
+    expect(PublicKeyBundle::for_environment(false))->toBe(array_map('trim', PublicKeyBundle::PRODUCTION_PEMS));
 });
 
 test('every PEM is parseable by OpenSSL', function (): void {
@@ -30,14 +30,28 @@ test('every PEM is parseable by OpenSSL', function (): void {
     }
 });
 
-test('the public-keys filter can supply a rotated key without a release', function (): void {
-    Filters\expectApplied('wc_maya_webhook_public_keys')->andReturn([ 'ROTATED-PEM' ]);
+test('the public-keys filter accepts a real rotated RSA key', function (): void {
+    $rotated_key = PublicKeyBundle::SANDBOX_PEMS[0];
+    Filters\expectApplied('wc_maya_webhook_public_keys')->andReturn([ "  {$rotated_key}  " ]);
 
-    expect(PublicKeyBundle::for_environment(false))->toBe([ 'ROTATED-PEM' ]);
+    expect(PublicKeyBundle::for_environment(false))->toBe([ trim($rotated_key) ]);
 });
 
 test('an empty/invalid filter result falls back to the bundled keys (never disables verification)', function (): void {
     Filters\expectApplied('wc_maya_webhook_public_keys')->andReturn([]);
 
     expect(PublicKeyBundle::for_environment(true))->toBe(PublicKeyBundle::SANDBOX_PEMS);
+});
+
+test('an all-invalid key override falls back to bundled keys', function (): void {
+    Filters\expectApplied('wc_maya_webhook_public_keys')->andReturn([ 'not-a-pem', 123 ]);
+
+    expect(PublicKeyBundle::for_environment(false))->toBe(PublicKeyBundle::PRODUCTION_PEMS);
+});
+
+test('a mixed key override retains only valid RSA public keys', function (): void {
+    $rsa_key = PublicKeyBundle::SANDBOX_PEMS[0];
+    Filters\expectApplied('wc_maya_webhook_public_keys')->andReturn([ 'not-a-pem', $rsa_key ]);
+
+    expect(PublicKeyBundle::for_environment(false))->toBe([ trim($rsa_key) ]);
 });
